@@ -72,6 +72,40 @@
             }
         }
 
+        @keyframes bounceIcon {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
         .container {
             position: relative;
             z-index: 1;
@@ -80,12 +114,13 @@
 
         .verify-card {
             background: white;
-            border-radius: 24px;
+            border-radius: 32px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             overflow: hidden;
             max-width: 480px;
             margin: 0 auto;
             position: relative;
+            animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .verify-card::before {
@@ -94,30 +129,35 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--primary-color));
+            background-size: 200% 100%;
+            animation: shimmer 5s linear infinite;
+            z-index: 2;
         }
 
         /* Header Section */
         .verify-header {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            padding: 3rem 2rem 2.5rem;
+            padding: 2rem 2rem 1.5rem;
             text-align: center;
             color: white;
             position: relative;
         }
 
         .verify-icon {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 20px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             backdrop-filter: blur(10px);
             border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            animation: bounceIcon 3s ease-in-out infinite;
         }
 
         .verify-icon i {
@@ -126,9 +166,9 @@
         }
 
         .verify-header h1 {
-            font-size: 2rem;
+            font-size: 1.75rem;
             font-weight: 800;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
             letter-spacing: -0.5px;
         }
 
@@ -141,15 +181,15 @@
 
         /* Body Section */
         .verify-body {
-            padding: 2.5rem 2rem;
+            padding: 1.75rem 2rem;
         }
 
         .info-box {
             background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
             border-left: 4px solid var(--primary-color);
             border-radius: 12px;
-            padding: 1rem 1.25rem;
-            margin-bottom: 2rem;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.5rem;
             display: flex;
             align-items: start;
             gap: 0.75rem;
@@ -180,17 +220,30 @@
         }
 
         .form-group {
-            margin-bottom: 1.75rem;
+            margin-bottom: 1.25rem;
+            animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .form-group:nth-child(1) {
+            animation-delay: 0.2s;
+        }
+
+        .form-group:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .form-group:nth-child(3) {
+            animation-delay: 0.4s;
         }
 
         .form-group label {
             font-weight: 600;
             color: var(--gray-700);
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            font-size: 0.9375rem;
+            font-size: 0.9rem;
         }
 
         .form-group label i {
@@ -211,9 +264,10 @@
 
         .form-control:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.15);
             outline: none;
             background: white;
+            padding-left: 1.25rem;
         }
 
         .form-control.is-invalid {
@@ -224,26 +278,30 @@
         /* Button */
         .btn-verify {
             width: 100%;
-            height: 52px;
-            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+            height: 56px;
+            background: linear-gradient(135deg, var(--success-color), #059669, var(--success-color));
+            background-size: 200% 100%;
             border: none;
-            border-radius: 12px;
+            border-radius: 16px;
             color: white;
-            font-weight: 700;
-            font-size: 1rem;
+            font-weight: 800;
+            font-size: 1.1rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             margin-top: 0.5rem;
-            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation-delay: 0.5s;
         }
 
         .btn-verify:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(16, 185, 129, 0.4);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
+            background-position: 100% 0;
             color: white;
         }
 
@@ -280,7 +338,7 @@
         /* Divider */
         .divider {
             position: relative;
-            margin: 1.5rem 0;
+            margin: 1.25rem 0;
             text-align: center;
         }
 
@@ -331,7 +389,7 @@
         /* Footer */
         .verify-footer {
             text-align: center;
-            padding: 1.5rem 2rem;
+            padding: 1rem 2rem;
             background: var(--gray-50);
             border-top: 1px solid var(--gray-200);
         }
@@ -472,10 +530,59 @@
         html {
             scroll-behavior: smooth;
         }
+
+        /* Page Transition Overlay */
+        #page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease-out, visibility 0.5s;
+        }
+
+        .loader-content {
+            text-align: center;
+            animation: pulseFade 1.5s ease-in-out infinite;
+        }
+
+        .loader-icon {
+            font-size: 3.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        @keyframes pulseFade {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.7;
+            }
+        }
     </style>
 </head>
 
 <body>
+    <!-- Page Loader -->
+    <div id="page-loader">
+        <div class="loader-content">
+            <div class="loader-icon">
+                <i class="fas fa-vote-yea fa-spin"></i>
+            </div>
+            <h5 class="font-weight-bold" style="color: var(--dark-color); font-weight: 800; letter-spacing: -1px;">E-Voting BEM</h5>
+        </div>
+    </div>
     <div class="back-link">
         <a href="{{ url('/') }}">
             <i class="fas fa-arrow-left"></i> Kembali
@@ -571,6 +678,22 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        window.addEventListener('load', function() {
+            const loader = document.getElementById('page-loader');
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.style.visibility = 'hidden';
+            }, 500);
+        });
+
+        // Show loader on page leave
+        window.addEventListener('beforeunload', function() {
+            const loader = document.getElementById('page-loader');
+            loader.style.visibility = 'visible';
+            loader.style.opacity = '1';
+        });
+    </script>
 </body>
 
 </html>

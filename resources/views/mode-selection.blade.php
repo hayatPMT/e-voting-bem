@@ -151,6 +151,62 @@
    font-weight: 500;
   }
 
+  /* Page Transition Overlay */
+  #page-loader {
+   position: fixed;
+   top: 0;
+   left: 0;
+   width: 100%;
+   height: 100%;
+   background: #fff;
+   z-index: 9999;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   transition: opacity 0.5s ease-out, visibility 0.5s;
+  }
+
+  .loader-content {
+   text-align: center;
+   animation: pulseFade 1.5s ease-in-out infinite;
+  }
+
+  .loader-icon {
+   font-size: 3.5rem;
+   color: var(--primary-color);
+   margin-bottom: 1rem;
+  }
+
+  @keyframes pulseFade {
+
+   0%,
+   100% {
+    transform: scale(1);
+    opacity: 1;
+   }
+
+   50% {
+    transform: scale(1.1);
+    opacity: 0.7;
+   }
+  }
+
+  .mode-selection-card {
+   animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes slideUpFade {
+   from {
+    opacity: 0;
+    transform: translateY(30px);
+   }
+
+   to {
+    opacity: 1;
+    transform: translateY(0);
+   }
+  }
+
   .alert-box {
    background: linear-gradient(135deg, #fffbeb, #fef3c7);
    border-left: 5px solid var(--warning-color);
@@ -352,6 +408,15 @@
 </head>
 
 <body>
+ <!-- Page Loader -->
+ <div id="page-loader">
+  <div class="loader-content">
+   <div class="loader-icon">
+    <i class="fas fa-vote-yea fa-spin"></i>
+   </div>
+   <h5 class="font-weight-bold" style="color: var(--dark-color); font-weight: 800; letter-spacing: -0.5px;">E-Voting BEM</h5>
+  </div>
+ </div>
 
  <div class="container px-3">
   <div class="mode-selection-card">
@@ -420,6 +485,22 @@
  </div>
 
  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+ <script>
+  window.addEventListener('load', function() {
+   const loader = document.getElementById('page-loader');
+   loader.style.opacity = '0';
+   setTimeout(() => {
+    loader.style.visibility = 'hidden';
+   }, 500);
+  });
+
+  // Show loader on page leave
+  window.addEventListener('beforeunload', function() {
+   const loader = document.getElementById('page-loader');
+   loader.style.visibility = 'visible';
+   loader.style.opacity = '1';
+  });
+ </script>
 </body>
 
 </html>

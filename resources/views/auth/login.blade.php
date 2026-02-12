@@ -79,6 +79,40 @@
             }
         }
 
+        @keyframes bounceIcon {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
         .login-container {
             width: 100%;
             max-width: 480px;
@@ -89,10 +123,11 @@
 
         .login-card {
             background: white;
-            border-radius: 24px;
+            border-radius: 32px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             overflow: hidden;
             position: relative;
+            animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .login-card::before {
@@ -101,8 +136,11 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--primary-color));
+            background-size: 200% 100%;
+            animation: shimmer 5s linear infinite;
+            z-index: 2;
         }
 
         /* Header Section */
@@ -115,16 +153,18 @@
         }
 
         .login-icon {
-            width: 80px;
-            height: 80px;
+            width: 85px;
+            height: 85px;
             background: rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
+            border-radius: 24px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 1.5rem;
             backdrop-filter: blur(10px);
             border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            animation: bounceIcon 3s ease-in-out infinite;
         }
 
         .login-icon i {
@@ -153,6 +193,15 @@
 
         .form-group {
             margin-bottom: 1.75rem;
+            animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .form-group:nth-child(1) {
+            animation-delay: 0.2s;
+        }
+
+        .form-group:nth-child(2) {
+            animation-delay: 0.3s;
         }
 
         .form-group label {
@@ -187,9 +236,10 @@
 
         .form-control:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.15);
             outline: none;
             background: white;
+            padding-left: 1.25rem;
         }
 
         .form-control.is-invalid {
@@ -208,26 +258,30 @@
         /* Button */
         .btn-login {
             width: 100%;
-            height: 52px;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--primary-color));
+            background-size: 200% 100%;
             border: none;
-            border-radius: 12px;
+            border-radius: 16px;
             color: white;
-            font-weight: 700;
-            font-size: 1rem;
+            font-weight: 800;
+            font-size: 1.1rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             margin-top: 0.5rem;
-            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation-delay: 0.4s;
         }
 
         .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(102, 126, 234, 0.4);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
+            background-position: 100% 0;
             color: white;
         }
 
@@ -470,10 +524,59 @@
         html {
             scroll-behavior: smooth;
         }
+
+        /* Page Transition Overlay */
+        #page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease-out, visibility 0.5s;
+        }
+
+        .loader-content {
+            text-align: center;
+            animation: pulseFade 1.5s ease-in-out infinite;
+        }
+
+        .loader-icon {
+            font-size: 3.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        @keyframes pulseFade {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.7;
+            }
+        }
     </style>
 </head>
 
 <body>
+    <!-- Page Loader -->
+    <div id="page-loader">
+        <div class="loader-content">
+            <div class="loader-icon">
+                <i class="fas fa-vote-yea fa-spin"></i>
+            </div>
+            <h5 class="font-weight-bold" style="color: var(--dark-color); font-weight: 800; letter-spacing: -1px;">E-Voting BEM</h5>
+        </div>
+    </div>
     <div class="back-link">
         <a href="{{ url('/') }}">
             <i class="fas fa-arrow-left"></i> Kembali
@@ -584,6 +687,22 @@
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        window.addEventListener('load', function() {
+            const loader = document.getElementById('page-loader');
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.style.visibility = 'hidden';
+            }, 500);
+        });
+
+        // Show loader on page leave
+        window.addEventListener('beforeunload', function() {
+            const loader = document.getElementById('page-loader');
+            loader.style.visibility = 'visible';
+            loader.style.opacity = '1';
+        });
+    </script>
 </body>
 
 </html>
