@@ -23,22 +23,22 @@
                     @method('PUT')
                     <div class="card-body">
                         @if (session('success'))
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                {{ session('success') }}
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ session('success') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
                         @endif
 
                         @if ($errors->any())
-                            <div class="alert alert-danger">
-                                <ul class="mb-0">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
                         @endif
 
                         <div class="form-group">
@@ -48,7 +48,7 @@
                                     <span class="input-group-text"><i class="fas fa-vote-yea"></i></span>
                                 </div>
                                 <input type="text" class="form-control" id="election_name" name="election_name"
-                                    value="{{ old('election_name', $setting?->election_name ?? 'E-Voting BEM') }}" 
+                                    value="{{ old('election_name', $setting?->election_name ?? 'E-Voting BEM') }}"
                                     placeholder="Contoh: Pemilihan Ketua BEM 2026">
                             </div>
                             <small class="form-text text-muted">Nama ini akan ditampilkan di halaman voting dan hasil.</small>
@@ -57,13 +57,13 @@
                         <div class="form-group">
                             <label for="election_logo">Logo Pemilihan</label>
                             @if($setting && $setting->election_logo)
-                                <div class="mb-2">
-                                    <img src="{{ asset('storage/' . $setting->election_logo) }}" 
-                                         alt="Current Logo" 
-                                         class="img-thumbnail" 
-                                         style="max-height: 100px;">
-                                    <p class="text-muted small mt-1">Logo saat ini</p>
-                                </div>
+                            <div class="mb-2">
+                                <img src="{{ asset('storage/' . $setting->election_logo) }}"
+                                    alt="Current Logo"
+                                    class="img-thumbnail"
+                                    style="max-height: 100px;">
+                                <p class="text-muted small mt-1">Logo saat ini</p>
+                            </div>
                             @endif
                             <div class="custom-file">
                                 <input type="file" class="custom-file-input" id="election_logo" name="election_logo" accept="image/*">
@@ -97,28 +97,28 @@
                             </div>
                             <small class="form-text text-muted">Voting akan otomatis ditutup setelah waktu ini.</small>
                         </div>
-                        
+
                         <div class="alert alert-info">
                             <h5><i class="icon fas fa-info"></i> Status Saat Ini</h5>
                             @php
-                                $now = now();
-                                $start = $setting->voting_start ?? null;
-                                $end = $setting->voting_end ?? null;
-                                $status = 'Belum Diatur';
-                                $class = 'warning';
-                                
-                                if ($start && $end) {
-                                    if ($now->between($start, $end)) {
-                                        $status = 'Sedang Berlangsung';
-                                        $class = 'success';
-                                    } elseif ($now->gt($end)) {
-                                        $status = 'Selesai';
-                                        $class = 'danger';
-                                    } else {
-                                        $status = 'Belum Dimulai';
-                                        $class = 'warning';
-                                    }
-                                }
+                            $now = now();
+                            $start = $setting->voting_start ?? null;
+                            $end = $setting->voting_end ?? null;
+                            $status = 'Belum Diatur';
+                            $class = 'warning';
+
+                            if ($start && $end) {
+                            if ($now->between($start, $end)) {
+                            $status = 'Sedang Berlangsung';
+                            $class = 'success';
+                            } elseif ($now->gt($end)) {
+                            $status = 'Selesai';
+                            $class = 'danger';
+                            } else {
+                            $status = 'Belum Dimulai';
+                            $class = 'warning';
+                            }
+                            }
                             @endphp
                             Status: <span class="badge badge-{{ $class }}">{{ $status }}</span>
                         </div>
@@ -134,31 +134,7 @@
                 </form>
             </div>
         </div>
-        
-        <div class="col-md-6">
-            <div class="card card-info card-outline">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="fas fa-shield-alt mr-2"></i>Informasi Sistem
-                    </h3>
-                </div>
-                <div class="card-body">
-                    <dl class="row">
-                        <dt class="col-sm-4">Versi Laravel</dt>
-                        <dd class="col-sm-8">{{ app()->version() }}</dd>
-                        
-                        <dt class="col-sm-4">PHP Version</dt>
-                        <dd class="col-sm-8">{{ phpversion() }}</dd>
-                        
-                        <dt class="col-sm-4">Database</dt>
-                        <dd class="col-sm-8">{{ config('database.default') }}</dd>
-                        
-                        <dt class="col-sm-4">Environment</dt>
-                        <dd class="col-sm-8">{{ app()->environment() }}</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
+
     </div>
 </div>
 @endsection

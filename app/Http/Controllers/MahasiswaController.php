@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\MahasiswaImport;
+use App\Exports\MahasiswaTemplateExport;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Models\MahasiswaProfile;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -68,86 +71,27 @@ class MahasiswaController extends Controller
      */
     public function downloadTemplate()
     {
-        $csv = "NIM,Nama Lengkap,Email,Program Studi,Angkatan\n";
-        $csv .= "12345678,Contoh Mahasiswa,contoh@student.ac.id,Teknik Informatika,2023\n";
-
-        return response($csv)
-            ->header('Content-Type', 'text/csv')
-            ->header('Content-Disposition', 'attachment; filename="template_import_mahasiswa.csv"');
+        return Excel::download(new MahasiswaTemplateExport, 'template_mahasiswa.xlsx');
     }
 
+    /**
+     * Import Mahasiswa from CSV
+     */
     /**
      * Import Mahasiswa from CSV
      */
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:csv,txt|max:2048',
+            'file' => 'required|mimes:xlsx,xls,csv|max:4096',
         ]);
 
-        $file = $request->file('file');
-        $handle = fopen($file->getPathname(), 'r');
-
-        // Skip header
-        fgetcsv($handle);
-
-        $successCount = 0;
-        $errors = [];
-        $row = 1;
-
-        while (($data = fgetcsv($handle, 1000, ',')) !== false) {
-            $row++;
-            if (count($data) < 5) {
-                continue;
-            }
-
-            $nim = trim($data[0]);
-            $nama = trim($data[1]);
-            $email = trim($data[2]);
-            $prodi = trim($data[3]);
-            $angkatan = trim($data[4]);
-
-            // Check duplicate
-            if (MahasiswaProfile::where('nim', $nim)->exists() || User::where('email', $email)->exists()) {
-                $errors[] = "Baris $row: NIM $nim atau Email $email sudah terdaftar.";
-
-                continue;
-            }
-
-            try {
-                $user = User::create([
-                    'name' => $nama,
-                    'email' => $email,
-                    'password' => bcrypt($nim), // Password default NIM
-                    'role' => 'mahasiswa',
-                    'is_active' => true,
-                    'email_verified_at' => now(),
-                ]);
-
-                MahasiswaProfile::create([
-                    'user_id' => $user->id,
-                    'nim' => $nim,
-                    'program_studi' => $prodi,
-                    'angkatan' => $angkatan,
-                    'semester' => 1,
-                    'status' => 'active',
-                ]);
-
-                $successCount++;
-            } catch (\Exception $e) {
-                $errors[] = "Baris $row: Gagal menyimpan data ($nim).";
-            }
+        try {
+            Excel::import(new MahasiswaImport, $request->file('file'));
+            return redirect()->route('admin.mahasiswa.index')->with('success', 'Data mahasiswa berhasil diimport.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal import data: ' . $e->getMessage());
         }
-
-        fclose($handle);
-
-        $message = "Berhasil mengimpor $successCount mahasiswa.";
-        if (count($errors) > 0) {
-            $message .= ' Gagal: ' . count($errors) . ' baris.';
-            return redirect()->route('admin.mahasiswa.index')->with('success', $message)->withErrors($errors);
-        }
-
-        return redirect()->route('admin.mahasiswa.index')->with('success', $message);
     }
 
     /**
@@ -221,19 +165,44 @@ class MahasiswaController extends Controller
     /**
      * Export mahasiswa list to CSV
      */
+    /**
+     * Export mahasiswa list to CSV
+     */
     public function export()
     {
-        $mahasiswa = MahasiswaProfile::with('user')->get();
+        $headers = [
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=mahasiswa_" . date('Y-m-d_H-i-s') . ".csv",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        ];
 
-        $csv = "NIM,Nama,Email,Program Studi,Angkatan,Semester,Status,Sudah Voting\n";
+        $columns = ['NIM', 'Nama', 'Email', 'Program Studi', 'Angkatan', 'Semester', 'Status', 'Sudah Voting'];
 
-        foreach ($mahasiswa as $m) {
-            $csv .= "\"{$m->nim}\",\"{$m->user->name}\",\"{$m->user->email}\",\"{$m->program_studi}\",\"{$m->angkatan}\",\"{$m->semester}\",\"{$m->status}\",\"" . ($m->has_voted ? 'Ya' : 'Tidak') . "\"\n";
-        }
+        $callback = function () use ($columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
 
-        return response($csv)
-            ->header('Content-Type', 'text/csv')
-            ->header('Content-Disposition', 'attachment; filename="mahasiswa_' . date('Y-m-d') . '.csv"');
+            MahasiswaProfile::with('user')->chunk(100, function ($mahasiswas) use ($file) {
+                foreach ($mahasiswas as $m) {
+                    fputcsv($file, [
+                        $m->nim,
+                        $m->user->name ?? '',
+                        $m->user->email ?? '',
+                        $m->program_studi,
+                        $m->angkatan,
+                        $m->semester,
+                        $m->status,
+                        $m->has_voted ? 'Ya' : 'Tidak'
+                    ]);
+                }
+            });
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     /**

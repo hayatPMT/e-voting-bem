@@ -76,10 +76,16 @@
 
     .chart-card-modern {
         background: white;
-        border-radius: 20px;
+        border-radius: 24px;
         padding: 2rem;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-        border: 2px solid #f3f4f6;
+        /* Reused standard shadow */
+        border: none;
+        transition: transform 0.3s ease;
+    }
+
+    .chart-card-modern:hover {
+        transform: translateY(-5px);
     }
 
     .chart-header-modern {
@@ -206,6 +212,21 @@
     }
 </style>
 
+<!-- Welcome Banner -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex align-items-center justify-content-between p-4 bg-white rounded-lg shadow-sm" style="border-radius: 16px; background: linear-gradient(120deg, #667eea 0%, #764ba2 100%); color: white;">
+            <div>
+                <h2 class="font-weight-bold mb-1">Selamat Datang, {{ auth()->user()->name }}! 👋</h2>
+                <p class="mb-0" style="opacity: 0.9;">Pantau jalannya pemilihan secara real-time dari dashboard ini.</p>
+            </div>
+            <div class="d-none d-md-block">
+                <i class="fas fa-chart-line fa-4x" style="opacity: 0.2;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Statistics Cards -->
 <div class="row mb-4">
     <!-- Total Kandidat -->
@@ -283,6 +304,10 @@
             <a href="{{ route('admin.mahasiswa.index') }}" class="action-btn">
                 <i class="fas fa-user-graduate"></i>
                 <span>Kelola Mahasiswa</span>
+            </a>
+            <a href="{{ route('admin.petugas.index') }}" class="action-btn">
+                <i class="fas fa-user-tie"></i>
+                <span>Kelola Petugas</span>
             </a>
             <a href="{{ url('/rekap') }}" class="action-btn">
                 <i class="fas fa-chart-line"></i>

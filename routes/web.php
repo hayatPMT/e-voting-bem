@@ -130,6 +130,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::put('/admin/voting-booths/{id}', [VotingBoothController::class, 'update'])->name('admin.voting-booths.update');
     Route::delete('/admin/voting-booths/{id}', [VotingBoothController::class, 'destroy'])->name('admin.voting-booths.destroy');
     Route::patch('/admin/voting-booths/{id}/toggle-status', [VotingBoothController::class, 'toggleStatus'])->name('admin.voting-booths.toggle-status');
+
+    // Petugas Management
+    Route::resource('/admin/petugas', \App\Http\Controllers\PetugasController::class, ['names' => 'admin.petugas']);
+    Route::patch('/admin/petugas/{id}/toggle-status', [\App\Http\Controllers\PetugasController::class, 'toggleStatus'])->name('admin.petugas.toggle-status');
 });
 
 // Voting Booth Standby & Validation (Public Access for Kiosk Mode)
