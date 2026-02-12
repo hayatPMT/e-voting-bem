@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -43,10 +44,12 @@
         /* Animated Background Pattern */
         body::before {
             content: '';
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            background: 
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
                 radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
             animation: float 20s ease-in-out infinite;
@@ -54,9 +57,19 @@
         }
 
         @keyframes float {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(30px, -50px) rotate(120deg); }
-            66% { transform: translate(-20px, 20px) rotate(240deg); }
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            33% {
+                transform: translate(30px, -50px) rotate(120deg);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) rotate(240deg);
+            }
         }
 
         .container {
@@ -461,6 +474,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="back-link">
         <a href="{{ url('/') }}">
@@ -482,10 +496,10 @@
 
                     <div class="verify-body">
                         @if (session('error'))
-                            <div class="alert alert-danger">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <span>{{ session('error') }}</span>
-                            </div>
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>{{ session('error') }}</span>
+                        </div>
                         @endif
 
                         <div class="info-box">
@@ -499,36 +513,36 @@
                         <form method="POST" action="{{ url('/verifikasi') }}">
                             @csrf
                             <input type="hidden" name="kandidat_id" value="{{ $kandidat_id ?? '' }}">
-                            
+
                             <div class="form-group">
                                 <label for="nim">
                                     <i class="fas fa-id-card"></i>
                                     Nomor Induk Mahasiswa (NIM)
                                 </label>
-                                <input type="text" 
-                                       id="nim" 
-                                       name="nim" 
-                                       class="form-control" 
-                                       placeholder="Contoh: 19081234001" 
-                                       value="{{ old('nim') }}" 
-                                       required 
-                                       autofocus
-                                       maxlength="20">
+                                <input type="text"
+                                    id="nim"
+                                    name="nim"
+                                    class="form-control"
+                                    placeholder="Contoh: 19081234001"
+                                    value="{{ old('nim') }}"
+                                    required
+                                    autofocus
+                                    maxlength="20">
                             </div>
-                            
+
                             <div class="form-group">
                                 <label for="password">
                                     <i class="fas fa-lock"></i>
                                     Password
                                 </label>
-                                <input type="password" 
-                                       id="password" 
-                                       name="password" 
-                                       class="form-control" 
-                                       placeholder="Masukkan password Anda" 
-                                       required>
+                                <input type="password"
+                                    id="password"
+                                    name="password"
+                                    class="form-control"
+                                    placeholder="Masukkan password Anda"
+                                    required>
                             </div>
-                            
+
                             <button type="submit" class="btn-verify">
                                 <i class="fas fa-check-circle"></i>
                                 Verifikasi & Lanjutkan
@@ -558,4 +572,5 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

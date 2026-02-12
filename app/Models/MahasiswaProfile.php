@@ -61,7 +61,7 @@ class MahasiswaProfile extends Model
     {
         $this->update([
             'has_voted' => true,
-            'voted_at' => now(),
+            // 'voted_at' => now(), // Removed for anonymity
         ]);
     }
 
@@ -71,7 +71,7 @@ class MahasiswaProfile extends Model
     public function getVotingStatusAttribute(): ?string
     {
         if ($this->has_voted) {
-            return "Sudah Memilih pada {$this->voted_at->format('d-m-Y H:i')}";
+            return 'Sudah Memilih';
         }
 
         return 'Belum Memilih';

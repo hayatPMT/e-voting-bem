@@ -45,9 +45,11 @@
 
   body::before {
    content: '';
-   position: absolute;
-   width: 200%;
-   height: 200%;
+   position: fixed;
+   top: 0;
+   left: 0;
+   width: 100%;
+   height: 100%;
    background:
     radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);

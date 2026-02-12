@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class VotingController extends Controller
 {
@@ -80,6 +81,9 @@ class VotingController extends Controller
             return back()->with('error', $scheduleName . ' sudah ditutup pada ' . $endTime->format('d M Y H:i'));
         }
 
+        // Introduce random delay (0.5 to 2.5 seconds) to break timestamp matching between profile update and vote cast
+        usleep(rand(500000, 2500000));
+
         // Create anonymous vote record (No user_id)
         \Illuminate\Support\Facades\DB::beginTransaction();
         try {
@@ -91,10 +95,10 @@ class VotingController extends Controller
                 'user_id' => null,
                 'kandidat_id' => $id,
                 'encrypted_kandidat_id' => encrypt($id),
-                'vote_hash' => hash('sha256', now()->timestamp . $id . \Illuminate\Support\Str::random(10)),
+                'vote_hash' => hash('sha256', Str::random(40)), // Don't use ID/Time in hash
             ]);
 
-            // Mark mahasiswa as voted (This is where the 'lock' happens)
+            // Mark mahasiswa as voted
             $mahasiswa = MahasiswaProfile::where('user_id', $userId)->first();
             if ($mahasiswa) {
                 $mahasiswa->markAsVoted();
@@ -104,14 +108,14 @@ class VotingController extends Controller
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
             \Illuminate\Support\Facades\Log::error('Voting Error: ' . $e->getMessage());
+
             return back()->with('error', 'Terjadi kesalahan saat menyimpan suara Anda. Silakan coba lagi.');
         }
 
         return redirect('/voting')->with([
             'success' => 'Vote Anda berhasil disimpan secara anonim. Terima kasih telah berpartisipasi!',
             'voted_candidate' => $kandidat,
-            'vote_time' => now(),
-            'vote_hash' => substr(hash('sha256', $userId . $id . now()->timestamp), 0, 16),
+            'vote_hash' => substr(hash('sha256', Str::random(40)), 0, 16), // Anonymous hash for UI
         ]);
     }
 

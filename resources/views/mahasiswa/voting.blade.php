@@ -142,16 +142,16 @@
                     <!-- Candidate Number Badge -->
                     <div class="position-absolute" style="top: 1rem; left: 1rem;">
                         <div style="background: linear-gradient(135deg, #667eea, #764ba2); 
-                                            color: white; 
-                                            width: 45px; 
-                                            height: 45px; 
-                                            border-radius: 12px; 
-                                            display: flex; 
-                                            align-items: center; 
-                                            justify-content: center;
-                                            font-weight: 800;
-                                            font-size: 1.25rem;
-                                            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);">
+                                             color: white; 
+                                             width: 45px; 
+                                             height: 45px; 
+                                             border-radius: 12px; 
+                                             display: flex; 
+                                             align-items: center; 
+                                             justify-content: center;
+                                             font-weight: 800;
+                                             font-size: 1.25rem;
+                                             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);">
                             {{ $loop->iteration }}
                         </div>
                     </div>
@@ -298,16 +298,16 @@
                             @endif
                             <div class="position-absolute" style="top: 1rem; left: 1rem;">
                                 <div style="background: linear-gradient(135deg, #667eea, #764ba2); 
-                                                    color: white; 
-                                                    width: 50px; 
-                                                    height: 50px; 
-                                                    border-radius: 12px; 
-                                                    display: flex; 
-                                                    align-items: center; 
-                                                    justify-content: center;
-                                                    font-weight: 800;
-                                                    font-size: 1.5rem;
-                                                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);">
+                                                     color: white; 
+                                                     width: 50px; 
+                                                     height: 50px; 
+                                                     border-radius: 12px; 
+                                                     display: flex; 
+                                                     align-items: center; 
+                                                     justify-content: center;
+                                                     font-weight: 800;
+                                                     font-size: 1.5rem;
+                                                     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);">
                                     {{ $loop->iteration }}
                                 </div>
                             </div>
@@ -597,6 +597,9 @@
     }
 </style>
 
+<!-- Session Data for JS -->
+<input type="hidden" id="voted_status" value="{{ session()->has('voted_candidate') ? 'true' : 'false' }}">
+
 <script>
     function updateCountdown() {
         // Use timestamps directly from server to avoid timezone parsing issues
@@ -738,22 +741,21 @@
         $('[data-toggle="tooltip"]').tooltip();
         updateCountdown();
 
-        @if(session('voted_candidate'))
-        console.log('Vote session detected, showing modal...');
-        console.log('Candidate:', '<?php echo session('voted_candidate')->nama ?? 'Unknown'; ?>');
+        // Check if there's a redirected 'voted' status from session
+        const hasVotedStatus = $('#voted_status').val() === 'true';
+        if (hasVotedStatus) {
+            console.log('Vote session detected, showing modal...');
 
-        // Use setTimeout to ensure DOM is fully loaded
-        setTimeout(function() {
-            $('#printModal').modal({
-                backdrop: 'static',
-                keyboard: false,
-                show: true
-            });
-            console.log('Modal should be visible now');
-        }, 100);
-        @else
-        console.log('No vote session found');
-        @endif
+            // Use setTimeout to ensure DOM is fully loaded
+            setTimeout(function() {
+                $('#printModal').modal({
+                    backdrop: 'static',
+                    keyboard: false,
+                    show: true
+                });
+                console.log('Modal should be visible now');
+            }, 100);
+        }
     });
 
     function printBukti() {
@@ -834,7 +836,7 @@
                 </a>
                 <button type="button" class="btn btn-primary px-4 rounded-pill shadow-sm" onclick="printBukti()">
                     <i class="fas fa-print mr-2"></i>Cetak Bukti
-                </button>
+                    </a>
             </div>
         </div>
     </div>

@@ -8,13 +8,15 @@ use App\Models\Vote;
 
 class PublicController extends Controller
 {
-    public function index()
+    public function index(): \Illuminate\Http\RedirectResponse|\Illuminate\View\View
     {
-        if (auth()->check()) {
-            if (auth()->user()->role === 'admin') {
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            /** @var \App\Models\User $user */
+            $user = \Illuminate\Support\Facades\Auth::user();
+            if ($user->role === 'admin') {
                 return redirect('/dashboard');
             }
-            if (auth()->user()->role === 'mahasiswa') {
+            if ($user->role === 'mahasiswa') {
                 return redirect('/voting');
             }
         }

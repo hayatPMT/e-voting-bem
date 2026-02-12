@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -45,10 +46,12 @@
         /* Animated Background Pattern */
         body::before {
             content: '';
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            background: 
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
                 radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
             animation: float 20s ease-in-out infinite;
@@ -56,9 +59,19 @@
         }
 
         @keyframes float {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(30px, -50px) rotate(120deg); }
-            66% { transform: translate(-20px, 20px) rotate(240deg); }
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            33% {
+                transform: translate(30px, -50px) rotate(120deg);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) rotate(240deg);
+            }
         }
 
         .container {
@@ -112,8 +125,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
         }
 
         .logo-icon i {
@@ -179,7 +199,7 @@
             z-index: 0;
         }
 
-        .role-card > * {
+        .role-card>* {
             position: relative;
             z-index: 1;
         }
@@ -302,9 +322,11 @@
             .landing-card {
                 padding: 3rem 2rem;
             }
+
             .main-title {
                 font-size: 2.25rem;
             }
+
             .roles-grid {
                 grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
                 gap: 1.5rem;
@@ -315,40 +337,51 @@
             body {
                 padding: 1rem 0;
             }
+
             .landing-card {
                 padding: 2.5rem 1.5rem;
                 border-radius: 20px;
             }
+
             .header-section {
                 margin-bottom: 2.5rem;
             }
+
             .logo-icon {
                 width: 60px;
                 height: 60px;
                 border-radius: 16px;
             }
+
             .logo-icon i {
                 font-size: 1.75rem;
             }
+
             .main-title {
                 font-size: 2rem;
             }
+
             .main-subtitle {
                 font-size: 1rem;
             }
+
             .role-card {
                 padding: 2rem 1.5rem;
             }
+
             .icon-wrapper {
                 width: 75px;
                 height: 75px;
             }
+
             .icon-wrapper i {
                 font-size: 2rem;
             }
+
             .role-title {
                 font-size: 1.25rem;
             }
+
             .role-desc {
                 font-size: 0.875rem;
             }
@@ -358,27 +391,34 @@
             .landing-card {
                 padding: 2rem 1.25rem;
             }
+
             .main-title {
                 font-size: 1.75rem;
             }
+
             .main-subtitle {
                 font-size: 0.9375rem;
             }
+
             .roles-grid {
                 grid-template-columns: 1fr;
                 gap: 1.25rem;
             }
+
             .role-card {
                 padding: 1.75rem 1.25rem;
             }
+
             .icon-wrapper {
                 width: 70px;
                 height: 70px;
                 margin-bottom: 1.25rem;
             }
+
             .footer-badges {
                 gap: 0.75rem;
             }
+
             .badge-item {
                 font-size: 0.75rem;
                 padding: 0.4rem 0.85rem;
@@ -391,75 +431,77 @@
         }
     </style>
 </head>
+
 <body>
 
-<div class="container px-3">
-    <div class="landing-wrapper">
-        <div class="landing-card">
-            <!-- Header Section -->
-            <div class="header-section">
-                <div class="logo-icon">
-                    <i class="fas fa-vote-yea"></i>
-                </div>
-                <h1 class="main-title">E-Voting BEM</h1>
-                <p class="main-subtitle">Platform Pemilihan Digital yang Aman, Transparan, dan Real-time untuk BEM Kampus</p>
-            </div>
-
-            <!-- Roles Grid -->
-            <div class="roles-grid">
-                <!-- Admin Card -->
-                <a href="{{ route('login') }}" class="role-card">
-                    <div class="icon-wrapper">
-                        <i class="fas fa-user-shield"></i>
-                    </div>
-                    <div class="role-title">Administrator</div>
-                    <div class="role-desc">Kelola kandidat, mahasiswa, monitoring suara, dan akses ke dashboard lengkap sistem</div>
-                </a>
-
-                <!-- Mahasiswa Card -->
-                <a href="{{ route('verifikasi') }}" class="role-card">
-                    <span class="role-badge">
-                        <i class="fas fa-star"></i> Populer
-                    </span>
-                    <div class="icon-wrapper">
+    <div class="container px-3">
+        <div class="landing-wrapper">
+            <div class="landing-card">
+                <!-- Header Section -->
+                <div class="header-section">
+                    <div class="logo-icon">
                         <i class="fas fa-vote-yea"></i>
                     </div>
-                    <div class="role-title">Mahasiswa</div>
-                    <div class="role-desc">Login dengan NIM untuk memberikan hak suara Anda dalam pemilihan BEM</div>
-                </a>
-
-                <!-- Public Viewer Card -->
-                <a href="{{ route('public.chart') }}" class="role-card">
-                    <div class="icon-wrapper">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="role-title">Hasil Real-time</div>
-                    <div class="role-desc">Pantau hasil perolehan suara sementara secara langsung dan transparan</div>
-                </a>
-            </div>
-
-            <!-- Footer Section -->
-            <div class="footer-section">
-                <div class="footer-badges">
-                    <div class="badge-item">
-                        <i class="fas fa-shield-alt"></i>
-                        Aman & Terenkripsi
-                    </div>
-                    <div class="badge-item">
-                        <i class="fas fa-check-circle"></i>
-                        Transparan
-                    </div>
-                    <div class="badge-item">
-                        <i class="fas fa-clock"></i>
-                        Real-time
-                    </div>
+                    <h1 class="main-title">E-Voting BEM</h1>
+                    <p class="main-subtitle">Platform Pemilihan Digital yang Aman, Transparan, dan Real-time untuk BEM Kampus</p>
                 </div>
-                <p class="footer-text mt-3">&copy; {{ date('Y') }} Sistem E-Voting BEM. All rights reserved.</p>
+
+                <!-- Roles Grid -->
+                <div class="roles-grid">
+                    <!-- Admin Card -->
+                    <a href="{{ route('login') }}" class="role-card">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <div class="role-title">Administrator</div>
+                        <div class="role-desc">Kelola kandidat, mahasiswa, monitoring suara, dan akses ke dashboard lengkap sistem</div>
+                    </a>
+
+                    <!-- Mahasiswa Card -->
+                    <a href="{{ route('verifikasi') }}" class="role-card">
+                        <span class="role-badge">
+                            <i class="fas fa-star"></i> Populer
+                        </span>
+                        <div class="icon-wrapper">
+                            <i class="fas fa-vote-yea"></i>
+                        </div>
+                        <div class="role-title">Mahasiswa</div>
+                        <div class="role-desc">Login dengan NIM untuk memberikan hak suara Anda dalam pemilihan BEM</div>
+                    </a>
+
+                    <!-- Public Viewer Card -->
+                    <a href="{{ route('public.chart') }}" class="role-card">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="role-title">Hasil Real-time</div>
+                        <div class="role-desc">Pantau hasil perolehan suara sementara secara langsung dan transparan</div>
+                    </a>
+                </div>
+
+                <!-- Footer Section -->
+                <div class="footer-section">
+                    <div class="footer-badges">
+                        <div class="badge-item">
+                            <i class="fas fa-shield-alt"></i>
+                            Aman & Terenkripsi
+                        </div>
+                        <div class="badge-item">
+                            <i class="fas fa-check-circle"></i>
+                            Transparan
+                        </div>
+                        <div class="badge-item">
+                            <i class="fas fa-clock"></i>
+                            Real-time
+                        </div>
+                    </div>
+                    <p class="footer-text mt-3">&copy; {{ date('Y') }} Sistem E-Voting BEM. All rights reserved.</p>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

@@ -51,10 +51,12 @@
         /* Animated Background Pattern */
         body::before {
             content: '';
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            background: 
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
                 radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
             animation: float 20s ease-in-out infinite;
@@ -62,9 +64,19 @@
         }
 
         @keyframes float {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(30px, -50px) rotate(120deg); }
-            66% { transform: translate(-20px, 20px) rotate(240deg); }
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            33% {
+                transform: translate(30px, -50px) rotate(120deg);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) rotate(240deg);
+            }
         }
 
         .login-container {
@@ -480,23 +492,23 @@
 
             <div class="login-body">
                 @if (session('error'))
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span>{{ session('error') }}</span>
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>{{ session('error') }}</span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
                 @endif
 
                 @if (session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fas fa-check-circle"></i>
-                        <span>{{ session('success') }}</span>
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ session('success') }}</span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
                 @endif
 
                 <form method="POST" action="{{ url('/login') }}">
@@ -508,19 +520,19 @@
                             Alamat Email
                         </label>
                         <div class="input-wrapper">
-                            <input type="email" 
-                                   id="email" 
-                                   name="email" 
-                                   class="form-control @error('email') is-invalid @enderror"
-                                   placeholder="admin@example.com" 
-                                   required 
-                                   autofocus 
-                                   value="{{ old('email') }}">
+                            <input type="email"
+                                id="email"
+                                name="email"
+                                class="form-control @error('email') is-invalid @enderror"
+                                placeholder="admin@example.com"
+                                required
+                                autofocus
+                                value="{{ old('email') }}">
                         </div>
                         @error('email')
-                            <div class="invalid-feedback">
-                                <i class="fas fa-exclamation-triangle"></i> {{ $message }}
-                            </div>
+                        <div class="invalid-feedback">
+                            <i class="fas fa-exclamation-triangle"></i> {{ $message }}
+                        </div>
                         @enderror
                     </div>
 
@@ -530,17 +542,17 @@
                             Password
                         </label>
                         <div class="input-wrapper">
-                            <input type="password" 
-                                   id="password" 
-                                   name="password"
-                                   class="form-control @error('password') is-invalid @enderror" 
-                                   placeholder="Masukkan password Anda" 
-                                   required>
+                            <input type="password"
+                                id="password"
+                                name="password"
+                                class="form-control @error('password') is-invalid @enderror"
+                                placeholder="Masukkan password Anda"
+                                required>
                         </div>
                         @error('password')
-                            <div class="invalid-feedback">
-                                <i class="fas fa-exclamation-triangle"></i> {{ $message }}
-                            </div>
+                        <div class="invalid-feedback">
+                            <i class="fas fa-exclamation-triangle"></i> {{ $message }}
+                        </div>
                         @enderror
                     </div>
 
