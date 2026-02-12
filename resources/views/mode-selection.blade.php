@@ -80,10 +80,10 @@
 
   .mode-selection-card {
    background: var(--white);
-   border-radius: 24px;
+   border-radius: 32px;
    box-shadow: var(--shadow-xl);
-   padding: 3.5rem 3rem;
-   max-width: 900px;
+   padding: 4rem 3rem;
+   max-width: 960px;
    margin: 0 auto;
    position: relative;
    overflow: hidden;
@@ -95,20 +95,20 @@
    top: 0;
    left: 0;
    right: 0;
-   height: 5px;
+   height: 6px;
    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
   }
 
   .header-section {
    text-align: center;
-   margin-bottom: 3rem;
+   margin-bottom: 3.5rem;
   }
 
   .logo-icon {
-   width: 70px;
-   height: 70px;
+   width: 80px;
+   height: 80px;
    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-   border-radius: 20px;
+   border-radius: 24px;
    display: inline-flex;
    align-items: center;
    justify-content: center;
@@ -130,18 +130,19 @@
   }
 
   .logo-icon i {
-   font-size: 2rem;
+   font-size: 2.25rem;
    color: var(--white);
   }
 
   .main-title {
-   font-size: 2.5rem;
+   font-size: 2.75rem;
    font-weight: 800;
    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
    -webkit-background-clip: text;
    -webkit-text-fill-color: transparent;
    background-clip: text;
    margin-bottom: 0.75rem;
+   letter-spacing: -1px;
   }
 
   .main-subtitle {
@@ -150,12 +151,13 @@
    font-weight: 500;
   }
 
-  @if( !$tahapanActive) .alert-box {
-   background: linear-gradient(135deg, #fef3c7, #fde68a);
-   border-left: 4px solid var(--warning-color);
+  .alert-box {
+   background: linear-gradient(135deg, #fffbeb, #fef3c7);
+   border-left: 5px solid var(--warning-color);
    padding: 1.5rem;
-   border-radius: 12px;
-   margin-bottom: 2rem;
+   border-radius: 16px;
+   margin-bottom: 2.5rem;
+   box-shadow: var(--shadow-sm);
   }
 
   .alert-box h3 {
@@ -163,30 +165,43 @@
    font-size: 1.25rem;
    font-weight: 700;
    margin-bottom: 0.5rem;
+   display: flex;
+   align-items: center;
+   gap: 0.75rem;
   }
 
   .alert-box p {
    color: #78350f;
    margin: 0;
+   font-size: 0.95rem;
+   line-height: 1.6;
   }
 
-  @endif .mode-grid {
+  .mode-grid {
    display: grid;
-   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-   gap: 2rem;
-   margin-bottom: 2rem;
+   grid-template-columns: repeat(2, 1fr);
+   gap: 2.5rem;
+   margin-bottom: 3rem;
   }
 
+  /* Button Reset & Styling */
   .mode-card {
    background: var(--white);
-   border: 2px solid #e5e7eb;
-   border-radius: 20px;
-   padding: 2.5rem 2rem;
+   border: 2px solid #f3f4f6;
+   border-radius: 24px;
+   padding: 3rem 2rem;
    text-align: center;
    cursor: pointer;
-   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
    position: relative;
    overflow: hidden;
+   width: 100%;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   text-decoration: none;
+   outline: none !important;
+   box-shadow: var(--shadow-sm);
   }
 
   .mode-card::before {
@@ -198,18 +213,19 @@
    bottom: 0;
    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
    opacity: 0;
-   transition: opacity 0.4s ease;
+   transition: opacity 0.5s ease;
    z-index: 0;
   }
 
   .mode-card>* {
    position: relative;
    z-index: 1;
+   transition: all 0.4s ease;
   }
 
   .mode-card:hover {
-   transform: translateY(-8px);
-   box-shadow: var(--shadow-lg);
+   transform: translateY(-12px);
+   box-shadow: var(--shadow-xl);
    border-color: transparent;
   }
 
@@ -220,10 +236,12 @@
   .mode-card:hover .mode-icon-wrapper {
    background: rgba(255, 255, 255, 0.2);
    border-color: rgba(255, 255, 255, 0.3);
+   transform: scale(1.1);
   }
 
   .mode-card:hover .mode-icon-wrapper i {
    color: var(--white);
+   -webkit-text-fill-color: var(--white);
   }
 
   .mode-card:hover .mode-title,
@@ -232,71 +250,102 @@
   }
 
   .mode-icon-wrapper {
-   width: 90px;
-   height: 90px;
-   background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
-   border: 3px solid #e5e7eb;
-   border-radius: 22px;
+   width: 100px;
+   height: 100px;
+   background: #f9fafb;
+   border: 3px solid #f3f4f6;
+   border-radius: 28px;
    display: inline-flex;
    align-items: center;
    justify-content: center;
-   margin-bottom: 1.5rem;
+   margin-bottom: 2rem;
    transition: all 0.4s ease;
   }
 
   .mode-icon-wrapper i {
-   font-size: 2.5rem;
+   font-size: 2.75rem;
    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
    -webkit-background-clip: text;
    -webkit-text-fill-color: transparent;
    background-clip: text;
-   transition: all 0.4s ease;
   }
 
   .mode-title {
-   font-size: 1.5rem;
-   font-weight: 700;
-   margin-bottom: 0.75rem;
-   transition: color 0.4s ease;
+   font-size: 1.75rem;
+   font-weight: 800;
+   margin-bottom: 1rem;
+   color: var(--dark-color);
+   letter-spacing: -0.5px;
   }
 
   .mode-desc {
    font-size: 1rem;
    color: #6b7280;
    line-height: 1.6;
-   transition: color 0.4s ease;
+   max-width: 280px;
   }
 
   .footer-links {
    text-align: center;
-   padding-top: 2rem;
-   border-top: 1px solid #e5e7eb;
+   padding-top: 2.5rem;
+   border-top: 1px solid #f3f4f6;
+   display: flex;
+   justify-content: center;
+   flex-wrap: wrap;
+   gap: 2rem;
   }
 
   .footer-links a {
-   color: var(--primary-color);
+   color: #6b7280;
    text-decoration: none;
    font-weight: 600;
-   margin: 0 1rem;
-   transition: color 0.3s ease;
+   font-size: 0.95rem;
+   transition: all 0.3s ease;
+   display: flex;
+   align-items: center;
+   gap: 0.5rem;
+  }
+
+  .footer-links a i {
+   color: var(--primary-color);
+   font-size: 1.1rem;
   }
 
   .footer-links a:hover {
-   color: var(--secondary-color);
+   color: var(--primary-color);
+   transform: translateY(-2px);
+  }
+
+  @media (max-width: 992px) {
+   .mode-selection-card {
+    padding: 3rem 2rem;
+   }
+
+   .mode-grid {
+    gap: 1.5rem;
+   }
   }
 
   @media (max-width: 768px) {
    .mode-selection-card {
+    border-radius: 0;
     padding: 2.5rem 1.5rem;
+    margin: 0;
+    min-height: 100vh;
+    max-width: none;
    }
 
    .main-title {
-    font-size: 2rem;
+    font-size: 2.25rem;
    }
 
    .mode-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
+   }
+
+   .mode-card {
+    padding: 2.5rem 1.5rem;
    }
   }
  </style>
@@ -365,9 +414,6 @@
     </a>
     <a href="{{ route('voting-booth.portal') }}">
      <i class="fas fa-desktop"></i> Portal Bilik
-    </a>
-    <a href="{{ route('old.landing') }}">
-     <i class="fas fa-users"></i> Akses Lainnya
     </a>
    </div>
   </div>

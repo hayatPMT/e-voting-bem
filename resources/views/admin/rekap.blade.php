@@ -390,158 +390,168 @@
 </div>
 @endif
 
+{{-- Hidden div to pass data to JS --}}
+<div id="chart-data-container"
+    data-labels="{{ json_encode($data->map(fn($k) => $k->nama)->toArray()) }}"
+    data-values="{{ json_encode($data->map(fn($k) => ($k->votes_count ?? 0) + ($k->total_votes ?? 0))->toArray()) }}">
+</div>
+
 @endsection
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
-    @if($data->count() > 0 && $totalVotes > 0)
-    const labels = <?php echo json_encode($data->pluck('nama')); ?>;
-    const dataValues = <?php echo json_encode($data->map(fn($k) => ($k->votes_count ?? 0) + ($k->total_votes ?? 0))); ?>;
+    const chartContainer = document.getElementById('chart-data-container');
+    if (chartContainer) {
+        const labels = JSON.parse(chartContainer.dataset.labels || '[]');
+        const dataValues = JSON.parse(chartContainer.dataset.values || '[]');
+        const hasData = labels.length > 0 && dataValues.reduce((a, b) => a + b, 0) > 0;
 
-    const colors = [
-        '#667eea', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6',
-        '#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#a855f7', '#fb7185'
-    ];
+        if (hasData) {
+            const colors = [
+                '#667eea', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6',
+                '#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#a855f7', '#fb7185'
+            ];
 
-    // Pie Chart
-    const pieCtx = document.getElementById('pieChart');
-    if (pieCtx) {
-        new Chart(pieCtx, {
-            type: 'pie',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: dataValues,
-                    backgroundColor: colors.slice(0, labels.length),
-                    borderWidth: 3,
-                    borderColor: '#fff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            padding: 15,
-                            font: {
-                                size: 12,
-                                weight: '600'
-                            },
-                            color: '#1f2937'
-                        }
+            // Pie Chart
+            const pieCtx = document.getElementById('pieChart');
+            if (pieCtx) {
+                new Chart(pieCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: dataValues,
+                            backgroundColor: colors.slice(0, labels.length),
+                            borderWidth: 3,
+                            borderColor: '#fff'
+                        }]
                     },
-                    tooltip: {
-                        backgroundColor: 'rgba(31, 41, 55, 0.95)',
-                        padding: 12,
-                        titleFont: {
-                            size: 14,
-                            weight: 'bold'
-                        },
-                        bodyFont: {
-                            size: 13
-                        },
-                        borderColor: '#e5e7eb',
-                        borderWidth: 1,
-                        cornerRadius: 8,
-                        callbacks: {
-                            label: function(context) {
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = ((context.parsed / total) * 100).toFixed(2);
-                                return ' ' + context.label + ': ' + context.parsed + ' suara (' + percentage + '%)';
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    font: {
+                                        size: 12,
+                                        weight: '600'
+                                    },
+                                    color: '#1f2937'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(31, 41, 55, 0.95)',
+                                padding: 12,
+                                titleFont: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                bodyFont: {
+                                    size: 13
+                                },
+                                borderColor: '#e5e7eb',
+                                borderWidth: 1,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((context.parsed / total) * 100).toFixed(2);
+                                        return ' ' + context.label + ': ' + context.parsed + ' suara (' + percentage + '%)';
+                                    }
+                                }
                             }
+                        },
+                        animation: {
+                            animateRotate: true,
+                            animateScale: true,
+                            duration: 1200,
+                            easing: 'easeInOutQuart'
                         }
                     }
-                },
-                animation: {
-                    animateRotate: true,
-                    animateScale: true,
-                    duration: 1200,
-                    easing: 'easeInOutQuart'
-                }
+                });
             }
-        });
-    }
 
-    // Bar Chart
-    const barCtx = document.getElementById('barChart');
-    if (barCtx) {
-        new Chart(barCtx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Jumlah Suara',
-                    data: dataValues,
-                    backgroundColor: colors.slice(0, labels.length),
-                    borderRadius: 10,
-                    borderSkipped: false
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
+            // Bar Chart
+            const barCtx = document.getElementById('barChart');
+            if (barCtx) {
+                new Chart(barCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Jumlah Suara',
+                            data: dataValues,
+                            backgroundColor: colors.slice(0, labels.length),
+                            borderRadius: 10,
+                            borderSkipped: false
+                        }]
                     },
-                    tooltip: {
-                        backgroundColor: 'rgba(31, 41, 55, 0.95)',
-                        padding: 12,
-                        titleFont: {
-                            size: 14,
-                            weight: 'bold'
-                        },
-                        bodyFont: {
-                            size: 13
-                        },
-                        borderColor: '#e5e7eb',
-                        borderWidth: 1,
-                        cornerRadius: 8,
-                        callbacks: {
-                            label: function(context) {
-                                return ' ' + context.parsed.y + ' suara';
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(31, 41, 55, 0.95)',
+                                padding: 12,
+                                titleFont: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                bodyFont: {
+                                    size: 13
+                                },
+                                borderColor: '#e5e7eb',
+                                borderWidth: 1,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        return ' ' + context.parsed.y + ' suara';
+                                    }
+                                }
                             }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: '#f3f4f6',
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    stepSize: 1,
+                                    font: {
+                                        weight: '600'
+                                    },
+                                    color: '#6b7280'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    font: {
+                                        weight: '600',
+                                        size: 11
+                                    },
+                                    color: '#1f2937'
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 1200,
+                            easing: 'easeInOutQuart'
                         }
                     }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: '#f3f4f6',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            stepSize: 1,
-                            font: {
-                                weight: '600'
-                            },
-                            color: '#6b7280'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            font: {
-                                weight: '600',
-                                size: 11
-                            },
-                            color: '#1f2937'
-                        }
-                    }
-                },
-                animation: {
-                    duration: 1200,
-                    easing: 'easeInOutQuart'
-                }
+                });
             }
-        });
+        }
     }
-    @endif
 </script>
 @endpush

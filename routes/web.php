@@ -28,11 +28,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [ModeSelectionController::class, 'index'])->name('landing');
 Route::post('/select-mode', [ModeSelectionController::class, 'selectMode'])->name('mode.select');
 
-// Public: Old Landing Page (for backward compatibility)
-Route::get('/old-landing', function () {
-    return view('old-landing');
-})->name('old.landing');
-
 // Public: Viewers Page (Charts)
 Route::get('/chart', [PublicController::class, 'index'])->name('public.chart');
 

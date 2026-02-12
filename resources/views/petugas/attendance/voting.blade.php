@@ -360,30 +360,28 @@
  }
 </style>
 
+{{-- Hidden container for countdown data --}}
+<div id="countdown-data"
+ data-now="{{ now()->timestamp * 1000 }}"
+ data-start="{{ ($setting && $setting->voting_start) ? $setting->voting_start->timestamp * 1000 : now()->subMinute()->timestamp * 1000 }}"
+ data-end="{{ ($setting && $setting->voting_end) ? $setting->voting_end->timestamp * 1000 : now()->addHours(24)->timestamp * 1000 }}">
+</div>
+
 <script>
  function updateCountdown() {
-  const serverNow = {
-   {
-    $serverNow
-   }
-  };
-  const startTime = {
-   {
-    $startTime
-   }
-  };
-  const endTime = {
-   {
-    $endTime
-   }
-  };
+  const dataEl = document.getElementById('countdown-data');
+  if (!dataEl) return;
+
+  const serverNow = parseInt(dataEl.dataset.now);
+  const startTime = parseInt(dataEl.dataset.start);
+  const endTime = parseInt(dataEl.dataset.end);
 
   const clientNow = new Date().getTime();
   const timeOffset = serverNow - clientNow;
 
   const titleElement = document.getElementById('countdown-title');
   const messageContainer = document.getElementById('timer-message');
-  const messageText = messageContainer.querySelector('h4');
+  const messageText = messageContainer ? messageContainer.querySelector('h4') : null;
   const circles = document.querySelectorAll('.timer-circle-container');
 
   const circumference = 283;
@@ -406,14 +404,14 @@
 
    if (now > endTime) {
     circles.forEach(c => c.style.display = 'none');
-    messageContainer.classList.remove('d-none');
-    messageText.innerHTML = '<i class="fas fa-flag-checkered mr-2"></i>Waktu Voting Telah Selesai';
+    if (messageContainer) messageContainer.classList.remove('d-none');
+    if (messageText) messageText.innerHTML = '<i class="fas fa-flag-checkered mr-2"></i>Waktu Voting Telah Selesai';
     if (titleElement) titleElement.innerText = "Voting Selesai";
     return;
    }
 
    circles.forEach(c => c.style.display = 'block');
-   messageContainer.classList.add('d-none');
+   if (messageContainer) messageContainer.classList.add('d-none');
    if (titleElement) titleElement.innerText = "Sisa Waktu Voting";
    updateTimerDigits(endTime - now);
   }
@@ -425,10 +423,15 @@
    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-   document.getElementById('c-days').innerText = days < 10 ? '0' + days : days;
-   document.getElementById('c-hours').innerText = hours < 10 ? '0' + hours : hours;
-   document.getElementById('c-minutes').innerText = minutes < 10 ? '0' + minutes : minutes;
-   document.getElementById('c-seconds').innerText = seconds < 10 ? '0' + seconds : seconds;
+   const dEl = document.getElementById('c-days');
+   const hEl = document.getElementById('c-hours');
+   const mEl = document.getElementById('c-minutes');
+   const sEl = document.getElementById('c-seconds');
+
+   if (dEl) dEl.innerText = days < 10 ? '0' + days : days;
+   if (hEl) hEl.innerText = hours < 10 ? '0' + hours : hours;
+   if (mEl) mEl.innerText = minutes < 10 ? '0' + minutes : minutes;
+   if (sEl) sEl.innerText = seconds < 10 ? '0' + seconds : seconds;
 
    setProgress('p-seconds', seconds, 60);
    setProgress('p-minutes', minutes, 60);

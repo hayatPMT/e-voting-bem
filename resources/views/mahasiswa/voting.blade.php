@@ -836,7 +836,7 @@
                 </a>
                 <button type="button" class="btn btn-primary px-4 rounded-pill shadow-sm" onclick="printBukti()">
                     <i class="fas fa-print mr-2"></i>Cetak Bukti
-                    </a>
+                </button>
             </div>
         </div>
     </div>
