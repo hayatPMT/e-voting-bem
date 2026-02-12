@@ -143,9 +143,11 @@ class MahasiswaController extends Controller
 
         $message = "Berhasil mengimpor $successCount mahasiswa.";
         if (count($errors) > 0) {
-            $message .= ' Gagal: '.count($errors).' baris.';
+            $message .= ' Gagal: ' . count($errors) . ' baris.';
+            return redirect()->route('admin.mahasiswa.index')->with('success', $message)->withErrors($errors);
         }
 
+        return redirect()->route('admin.mahasiswa.index')->with('success', $message);
     }
 
     /**
@@ -226,12 +228,12 @@ class MahasiswaController extends Controller
         $csv = "NIM,Nama,Email,Program Studi,Angkatan,Semester,Status,Sudah Voting\n";
 
         foreach ($mahasiswa as $m) {
-            $csv .= "\"{$m->nim}\",\"{$m->user->name}\",\"{$m->user->email}\",\"{$m->program_studi}\",\"{$m->angkatan}\",\"{$m->semester}\",\"{$m->status}\",\"".($m->has_voted ? 'Ya' : 'Tidak')."\"\n";
+            $csv .= "\"{$m->nim}\",\"{$m->user->name}\",\"{$m->user->email}\",\"{$m->program_studi}\",\"{$m->angkatan}\",\"{$m->semester}\",\"{$m->status}\",\"" . ($m->has_voted ? 'Ya' : 'Tidak') . "\"\n";
         }
 
         return response($csv)
             ->header('Content-Type', 'text/csv')
-            ->header('Content-Disposition', 'attachment; filename="mahasiswa_'.date('Y-m-d').'.csv"');
+            ->header('Content-Disposition', 'attachment; filename="mahasiswa_' . date('Y-m-d') . '.csv"');
     }
 
     /**

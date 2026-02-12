@@ -1,10 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Dashboard')
 @section('breadcrumb_title', 'Dashboard Utama')
 
 @section('breadcrumb')
-    <li class="breadcrumb-item active">Dashboard</li>
+<li class="breadcrumb-item active">Dashboard</li>
 @endsection
 
 @section('content')
@@ -167,16 +167,20 @@
         .stat-card-modern {
             padding: 1.5rem 1.25rem;
         }
+
         .stat-icon-wrapper {
             width: 60px;
             height: 60px;
         }
+
         .stat-value {
             font-size: 2rem;
         }
+
         .chart-card-modern {
             padding: 1.5rem;
         }
+
         .chart-title-modern {
             font-size: 1.25rem;
         }
@@ -187,12 +191,15 @@
             width: 55px;
             height: 55px;
         }
+
         .stat-icon-wrapper i {
             font-size: 1.75rem;
         }
+
         .stat-value {
             font-size: 1.75rem;
         }
+
         .chart-card-modern {
             padding: 1.25rem;
         }
@@ -232,8 +239,8 @@
             <div class="stat-label">Partisipasi</div>
             <div class="stat-value">
                 @php
-                    $totalMahasiswa = \App\Models\User::where('role', 'mahasiswa')->count();
-                    $percentage = $totalMahasiswa > 0 ? round(($totalSuara / $totalMahasiswa) * 100, 1) : 0;
+                $totalMahasiswa = \App\Models\User::where('role', 'mahasiswa')->count();
+                $percentage = $totalMahasiswa > 0 ? round(($totalSuara / $totalMahasiswa) * 100, 1) : 0;
                 @endphp
                 {{ $percentage }}%
             </div>
@@ -297,9 +304,9 @@
         const ctx = document.getElementById('dashboardChart');
         if (!ctx) return;
 
-        const labels = @json($kandidat->pluck('nama'));
-        const data = @json($kandidat->pluck('votes_count'));
-        
+        const labels = <?php echo json_encode($kandidat->pluck('nama')); ?>;
+        const data = <?php echo json_encode($kandidat->map(fn($k) => ($k->votes_count ?? 0) + ($k->total_votes ?? 0))); ?>;
+
         const colors = [
             '#667eea', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6',
             '#ec4899', '#14b8a6', '#f97316', '#06b6d4'
@@ -321,14 +328,19 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { 
-                        display: false 
+                    legend: {
+                        display: false
                     },
                     tooltip: {
                         backgroundColor: 'rgba(31, 41, 55, 0.95)',
                         padding: 12,
-                        titleFont: { size: 14, weight: 'bold' },
-                        bodyFont: { size: 13 },
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
                         borderColor: '#e5e7eb',
                         borderWidth: 1,
                         cornerRadius: 8,
@@ -343,22 +355,27 @@
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { 
+                        grid: {
                             color: '#f3f4f6',
                             drawBorder: false
                         },
-                        ticks: { 
+                        ticks: {
                             stepSize: 1,
-                            font: { weight: '600' },
+                            font: {
+                                weight: '600'
+                            },
                             color: '#6b7280'
                         }
                     },
                     x: {
-                        grid: { 
-                            display: false 
+                        grid: {
+                            display: false
                         },
                         ticks: {
-                            font: { weight: '700', size: 12 },
+                            font: {
+                                weight: '700',
+                                size: 12
+                            },
                             color: '#1f2937'
                         }
                     }

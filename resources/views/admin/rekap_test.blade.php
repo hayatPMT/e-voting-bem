@@ -395,7 +395,7 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
-    @if($data->count() > 0 && $totalVotes > 0)
+    @if($data - > count() > 0 && $totalVotes > 0)
     const labels = <?php echo json_encode($data->pluck('nama')); ?>;
     const dataValues = <?php echo json_encode($data->map(fn($k) => ($k->votes_count ?? 0) + ($k->total_votes ?? 0))); ?>;
 

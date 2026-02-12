@@ -11,7 +11,7 @@ class DashboardController extends Controller
     {
         $kandidat = Kandidat::withCount('votes')->get();
         $totalKandidat = Kandidat::count();
-        $totalSuara = Vote::count();
+        $totalSuara = Kandidat::sum('total_votes') + \App\Models\Vote::count();
         $totalMahasiswa = \App\Models\User::where('role', 'mahasiswa')->count();
 
         return view('admin.dashboard', [

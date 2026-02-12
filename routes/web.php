@@ -1,15 +1,20 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KandidatController;
 use App\Http\Controllers\MahasiswaController;
+use App\Http\Controllers\ModeSelectionController;
+use App\Http\Controllers\PetugasAuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\RekapController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\TahapanController;
 use App\Http\Controllers\VerifikasiController;
+use App\Http\Controllers\VotingBoothController;
 use App\Http\Controllers\VotingController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,10 +24,14 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// Public: Landing Page (Role Selection)
-Route::get('/', function () {
-    return view('landing');
-})->name('landing');
+// Public: Mode Selection Page (Online/Offline)
+Route::get('/', [ModeSelectionController::class, 'index'])->name('landing');
+Route::post('/select-mode', [ModeSelectionController::class, 'selectMode'])->name('mode.select');
+
+// Public: Old Landing Page (for backward compatibility)
+Route::get('/old-landing', function () {
+    return view('old-landing');
+})->name('old.landing');
 
 // Public: Viewers Page (Charts)
 Route::get('/chart', [PublicController::class, 'index'])->name('public.chart');
@@ -50,6 +59,24 @@ Route::post('/login', [AuthController::class, 'authenticate']);
 
 // Logout (for admin)
 Route::get('/logout', [AuthController::class, 'logout'])->middleware('auth');
+
+// Petugas Daftar Hadir Routes
+Route::get('/petugas/login', [PetugasAuthController::class, 'showLoginForm'])->name('petugas.login')->middleware('guest');
+Route::post('/petugas/login', [PetugasAuthController::class, 'login']);
+Route::get('/petugas/logout', [PetugasAuthController::class, 'logout'])->name('petugas.logout')->middleware('auth');
+
+// Petugas Attendance Management (only for petugas_daftar_hadir role)
+Route::middleware(['auth', 'petugas'])->prefix('petugas')->name('petugas.')->group(function () {
+    Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+    Route::post('/attendance/search', [AttendanceController::class, 'searchMahasiswa'])->name('attendance.search');
+    Route::post('/attendance/approve', [AttendanceController::class, 'approve'])->name('attendance.approve');
+    Route::post('/attendance/booth', [AttendanceController::class, 'setBooth'])->name('attendance.setBooth');
+    Route::delete('/attendance/{id}/cancel', [AttendanceController::class, 'cancel'])->name('attendance.cancel');
+});
+
+// Voting Booth (Public Routes for Kiosk Mode)
+Route::get('/voting-booth/session/{token}', [AttendanceController::class, 'showVotingPage'])->name('voting-booth.voting');
+Route::post('/voting-booth/session/{token}', [AttendanceController::class, 'processVote'])->name('voting-booth.vote');
 
 // Admin Management Routes (only for admin users)
 Route::middleware(['auth', 'admin'])->group(function () {
@@ -89,7 +116,32 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Settings Management
     Route::get('/admin/settings', [SettingsController::class, 'index'])->name('admin.settings');
     Route::put('/admin/settings', [SettingsController::class, 'update'])->name('admin.settings.update');
+
+    // Tahapan Management
+    Route::get('/admin/tahapan', [TahapanController::class, 'index'])->name('admin.tahapan.index');
+    Route::get('/admin/tahapan/create', [TahapanController::class, 'create'])->name('admin.tahapan.create');
+    Route::post('/admin/tahapan', [TahapanController::class, 'store'])->name('admin.tahapan.store');
+    Route::get('/admin/tahapan/{id}/edit', [TahapanController::class, 'edit'])->name('admin.tahapan.edit');
+    Route::put('/admin/tahapan/{id}', [TahapanController::class, 'update'])->name('admin.tahapan.update');
+    Route::delete('/admin/tahapan/{id}', [TahapanController::class, 'destroy'])->name('admin.tahapan.destroy');
+    Route::post('/admin/tahapan/{id}/set-current', [TahapanController::class, 'setAsCurrent'])->name('admin.tahapan.set-current');
+    Route::patch('/admin/tahapan/{id}/status', [TahapanController::class, 'updateStatus'])->name('admin.tahapan.update-status');
+
+    // Voting Booth Management
+    Route::get('/admin/voting-booths', [VotingBoothController::class, 'index'])->name('admin.voting-booths.index');
+    Route::get('/admin/voting-booths/create', [VotingBoothController::class, 'create'])->name('admin.voting-booths.create');
+    Route::post('/admin/voting-booths', [VotingBoothController::class, 'store'])->name('admin.voting-booths.store');
+    Route::get('/admin/voting-booths/{id}/edit', [VotingBoothController::class, 'edit'])->name('admin.voting-booths.edit');
+    Route::put('/admin/voting-booths/{id}', [VotingBoothController::class, 'update'])->name('admin.voting-booths.update');
+    Route::delete('/admin/voting-booths/{id}', [VotingBoothController::class, 'destroy'])->name('admin.voting-booths.destroy');
+    Route::patch('/admin/voting-booths/{id}/toggle-status', [VotingBoothController::class, 'toggleStatus'])->name('admin.voting-booths.toggle-status');
 });
+
+// Voting Booth Standby & Validation (Public Access for Kiosk Mode)
+Route::get('/booths', [VotingBoothController::class, 'portal'])->name('voting-booth.portal');
+Route::get('/voting-booth/{id}/standby', [VotingBoothController::class, 'standby'])->name('voting-booth.standby');
+Route::post('/voting-booth/validate', [VotingBoothController::class, 'validateToken'])->name('voting-booth.validate');
+Route::get('/voting-booth/{id}/check', [VotingBoothController::class, 'checkStandby'])->name('voting-booth.check-standby');
 
 /*
 |--------------------------------------------------------------------------
@@ -101,7 +153,7 @@ Route::get('/api/chart', function () {
 
     return response()->json([
         'labels' => $data->pluck('nama'),
-        'values' => $data->pluck('votes_count'),
+        'values' => $data->map(fn($k) => ($k->votes_count ?? 0) + ($k->total_votes ?? 0)),
     ]);
 });
 
@@ -111,5 +163,5 @@ Route::get('/api/chart', function () {
 |--------------------------------------------------------------------------
 */
 if (config('app.debug')) {
-    require __DIR__.'/test-pdf.php';
+    require __DIR__ . '/test-pdf.php';
 }

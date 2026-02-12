@@ -69,11 +69,35 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is petugas daftar hadir
+     */
+    public function isPetugas(): bool
+    {
+        return $this->role === 'petugas_daftar_hadir';
+    }
+
+    /**
      * Check if user is active
      */
     public function isActive(): bool
     {
         return $this->is_active === true;
+    }
+
+    /**
+     * Get attendance approvals as mahasiswa
+     */
+    public function attendanceApprovals()
+    {
+        return $this->hasMany(AttendanceApproval::class, 'mahasiswa_id');
+    }
+
+    /**
+     * Get attendance approvals made by this petugas
+     */
+    public function approvalsMade()
+    {
+        return $this->hasMany(AttendanceApproval::class, 'petugas_id');
     }
 
     /**

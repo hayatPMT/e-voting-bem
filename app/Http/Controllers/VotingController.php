@@ -10,6 +10,8 @@ use App\Services\VoteEncryptionService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class VotingController extends Controller
 {
@@ -23,10 +25,20 @@ class VotingController extends Controller
             $mahasiswa = $user->mahasiswaProfile;
         }
 
+        $currentTahapan = \App\Models\Tahapan::getCurrentTahapan();
+        $setting = Setting::first();
+
+        // Sync setting with tahapan for consistency in views
+        if ($currentTahapan && $setting) {
+            $setting->voting_start = $currentTahapan->waktu_mulai;
+            $setting->voting_end = $currentTahapan->waktu_selesai;
+        }
+
         return view('mahasiswa.voting', [
             'kandidat' => Kandidat::all(),
-            'setting' => Setting::first(),
+            'setting' => $setting,
             'mahasiswa' => $mahasiswa,
+            'currentTahapan' => $currentTahapan,
         ]);
     }
 
@@ -35,7 +47,7 @@ class VotingController extends Controller
         $user = Auth::user();
 
         if (! $user) {
-            return redirect('/verifikasi?kandidat='.$id)->with('error', 'Silakan verifikasi NIM dan password Anda terlebih dahulu.');
+            return redirect('/verifikasi?kandidat=' . $id)->with('error', 'Silakan verifikasi NIM dan password Anda terlebih dahulu.');
         }
 
         if ($user->role !== 'mahasiswa') {
@@ -43,45 +55,63 @@ class VotingController extends Controller
         }
 
         $userId = $user->id;
-        if (Vote::where('user_id', $userId)->exists()) {
+        if ($user->mahasiswaProfile->has_voted) {
             return back()->with('error', 'Anda sudah memilih');
         }
 
         $setting = Setting::first();
+        $currentTahapan = \App\Models\Tahapan::getCurrentTahapan();
         $now = Carbon::now();
 
-        if ($setting) {
-            if ($now->lt($setting->voting_start)) {
-                return back()->with('error', 'Voting belum dimulai. Harap kembali pada '.$setting->voting_start->format('d M Y H:i'));
-            }
-            if ($now->gt($setting->voting_end)) {
-                return back()->with('error', 'Voting sudah ditutup pada '.$setting->voting_end->format('d M Y H:i'));
-            }
+        $startTime = $setting?->voting_start;
+        $endTime = $setting?->voting_end;
+        $scheduleName = 'Voting';
+
+        if ($currentTahapan) {
+            $startTime = $currentTahapan->waktu_mulai;
+            $endTime = $currentTahapan->waktu_selesai;
+            $scheduleName = $currentTahapan->nama_tahapan;
         }
 
-        // Create encrypted vote record
-        $encryptionService = new VoteEncryptionService;
-
-        Vote::create([
-            'user_id' => $userId,
-            'kandidat_id' => $id, // Keep for backward compatibility during transition
-            'encrypted_kandidat_id' => $encryptionService->encryptKandidatId($id),
-            'vote_hash' => $encryptionService->generateVoteHash($userId, $id),
-        ]);
-
-        // Mark mahasiswa as voted
-        $mahasiswa = MahasiswaProfile::where('user_id', $userId)->first();
-        if ($mahasiswa) {
-            $mahasiswa->markAsVoted();
+        if ($startTime && $now->lt($startTime)) {
+            return back()->with('error', $scheduleName . ' belum dimulai. Harap kembali pada ' . $startTime->format('d M Y H:i'));
+        }
+        if ($endTime && $now->gt($endTime)) {
+            return back()->with('error', $scheduleName . ' sudah ditutup pada ' . $endTime->format('d M Y H:i'));
         }
 
-        $kandidat = Kandidat::find($id);
+        // Create anonymous vote record (No user_id)
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            $kandidat = Kandidat::findOrFail($id);
+            $kandidat->incrementVote();
+
+            // Create vote record in table (user_id is null for anonymity)
+            Vote::create([
+                'user_id' => null,
+                'kandidat_id' => $id,
+                'encrypted_kandidat_id' => encrypt($id),
+                'vote_hash' => hash('sha256', now()->timestamp . $id . \Illuminate\Support\Str::random(10)),
+            ]);
+
+            // Mark mahasiswa as voted (This is where the 'lock' happens)
+            $mahasiswa = MahasiswaProfile::where('user_id', $userId)->first();
+            if ($mahasiswa) {
+                $mahasiswa->markAsVoted();
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            \Illuminate\Support\Facades\Log::error('Voting Error: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat menyimpan suara Anda. Silakan coba lagi.');
+        }
 
         return redirect('/voting')->with([
-            'success' => 'Vote Anda berhasil disimpan. Terima kasih telah berpartisipasi!',
+            'success' => 'Vote Anda berhasil disimpan secara anonim. Terima kasih telah berpartisipasi!',
             'voted_candidate' => $kandidat,
             'vote_time' => now(),
-            'vote_hash' => substr(hash('sha256', $userId.$id.now()->timestamp), 0, 16),
+            'vote_hash' => substr(hash('sha256', $userId . $id . now()->timestamp), 0, 16),
         ]);
     }
 
@@ -114,7 +144,7 @@ class VotingController extends Controller
         $voteTime = $vote->created_at;
 
         // Generate vote hash for verification
-        $voteHash = strtoupper(substr(hash('sha256', $user->id.$vote->kandidat_id.$voteTime->timestamp), 0, 16));
+        $voteHash = strtoupper(substr(hash('sha256', $user->id . $vote->kandidat_id . $voteTime->timestamp), 0, 16));
 
         $data = [
             'nim' => $mahasiswa->nim ?? 'N/A',
@@ -122,7 +152,7 @@ class VotingController extends Controller
             'kandidat' => $kandidat,
             'vote_time' => $voteTime,
             'vote_hash' => $voteHash,
-            'qr_data' => 'VOTE-VERIFICATION:'.$voteHash,
+            'qr_data' => 'VOTE-VERIFICATION:' . $voteHash,
             'setting' => Setting::first(),
         ];
 
@@ -130,11 +160,11 @@ class VotingController extends Controller
             $pdf = Pdf::loadView('pdf.vote-receipt', $data);
             $pdf->setPaper('a4', 'portrait');
 
-            $filename = 'Bukti-Voting-'.($mahasiswa->nim ?? $user->id).'-'.now()->format('YmdHis').'.pdf';
+            $filename = 'Bukti-Voting-' . ($mahasiswa->nim ?? $user->id) . '-' . now()->format('YmdHis') . '.pdf';
 
             return $pdf->download($filename);
         } catch (\Exception $e) {
-            \Log::error('PDF Generation Error: '.$e->getMessage());
+            \Illuminate\Support\Facades\Log::error('PDF Generation Error: ' . $e->getMessage());
 
             return redirect('/voting')->with('error', 'Gagal membuat PDF. Silakan coba lagi atau hubungi admin.');
         }

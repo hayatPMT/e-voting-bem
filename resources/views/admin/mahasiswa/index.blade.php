@@ -1,9 +1,9 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 @section('title', 'Kelola Mahasiswa')
 @section('breadcrumb_title', 'Data Mahasiswa')
 @section('breadcrumb')
-    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-    <li class="breadcrumb-item active">Mahasiswa</li>
+<li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item active">Mahasiswa</li>
 @endsection
 
 @section('content')
@@ -24,17 +24,17 @@
 <div class="row">
     <div class="col-12">
         @if(session('import_errors'))
-            <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                <strong>Peringatan Import!</strong> Beberapa data gagal diimport:
-                <ul class="mb-0 mt-2">
-                    @foreach(session('import_errors') as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>Peringatan Import!</strong> Beberapa data gagal diimport:
+            <ul class="mb-0 mt-2">
+                @foreach(session('import_errors') as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
         @endif
 
         <div class="card card-outline card-primary">
@@ -66,41 +66,41 @@
                     </thead>
                     <tbody>
                         @forelse ($mahasiswa as $index => $m)
-                            <tr>
-                                <td>{{ $mahasiswa->firstItem() + $index }}</td>
-                                <td>{{ $m->nim }}</td>
-                                <td>{{ $m->user->name ?? '-' }}</td>
-                                <td>{{ $m->program_studi }}</td>
-                                <td>
-                                    @if($m->has_voted)
-                                        <span class="badge badge-success"><i class="fas fa-check mr-1"></i>Sudah Memilih</span>
-                                    @else
-                                        <span class="badge badge-warning"><i class="fas fa-clock mr-1"></i>Belum Memilih</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <form action="{{ route('admin.mahasiswa.destroy', $m->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                    @if($m->has_voted)
-                                        <form action="{{ route('admin.mahasiswa.toggle-voting', $m->id) }}" method="POST" class="d-inline ml-1" onsubmit="return confirm('Reset status voting mahasiswa ini?')">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit" class="btn btn-sm btn-secondary" title="Reset Voting">
-                                                <i class="fas fa-undo"></i>
-                                            </button>
-                                        </form>
-                                    @endif
-                                </td>
-                            </tr>
+                        <tr>
+                            <td>{{ $mahasiswa->firstItem() + $index }}</td>
+                            <td>{{ $m->nim }}</td>
+                            <td>{{ $m->user->name ?? '-' }}</td>
+                            <td>{{ $m->program_studi }}</td>
+                            <td>
+                                @if($m->has_voted)
+                                <span class="badge badge-success"><i class="fas fa-check mr-1"></i>Sudah Memilih</span>
+                                @else
+                                <span class="badge badge-warning"><i class="fas fa-clock mr-1"></i>Belum Memilih</span>
+                                @endif
+                            </td>
+                            <td>
+                                <form action="{{ route('admin.mahasiswa.destroy', $m->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                                @if($m->has_voted)
+                                <form action="{{ route('admin.mahasiswa.toggle-voting', $m->id) }}" method="POST" class="d-inline ml-1" onsubmit="return confirm('Reset status voting mahasiswa ini?')">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-sm btn-secondary" title="Reset Voting">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                </form>
+                                @endif
+                            </td>
+                        </tr>
                         @empty
-                            <tr>
-                                <td colspan="6" class="text-center py-4 text-muted">Belum ada data mahasiswa.</td>
-                            </tr>
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">Belum ada data mahasiswa.</td>
+                        </tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -132,7 +132,7 @@
                             <i class="fas fa-download mr-1"></i> Download Template CSV
                         </a>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="file">Pilih File CSV</label>
                         <input type="file" class="form-control-file" id="file" name="file" accept=".csv, .txt" required>

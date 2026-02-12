@@ -189,6 +189,7 @@
             .navbar-brand {
                 font-size: 1.25rem;
             }
+
             .navbar-brand i {
                 font-size: 1.375rem;
             }
@@ -198,12 +199,15 @@
             .navbar-voting {
                 padding: 0.75rem 0;
             }
+
             .navbar-brand {
                 font-size: 1.125rem;
             }
+
             main.container {
                 padding: 1.5rem 0.75rem;
             }
+
             .navbar-collapse {
                 background: rgba(102, 126, 234, 0.95);
                 backdrop-filter: blur(10px);
@@ -212,12 +216,15 @@
                 margin-top: 1rem;
                 box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
             }
+
             .navbar-nav .nav-item {
                 margin: 0.25rem 0;
             }
+
             .navbar-nav .nav-link {
                 width: 100%;
             }
+
             .user-badge {
                 display: block;
                 text-align: center;
@@ -229,6 +236,7 @@
             .navbar-brand {
                 font-size: 1rem;
             }
+
             main.container {
                 padding: 1.25rem 0.5rem;
             }
@@ -242,9 +250,9 @@
         <div class="container">
             <a class="navbar-brand" href="{{ url('/') }}">
                 @if(isset($setting) && $setting->election_logo)
-                    <img src="{{ asset('storage/' . $setting->election_logo) }}" alt="Logo" style="height: 40px; width: auto;" class="mr-2 rounded-circle">
+                <img src="{{ asset('storage/' . $setting->election_logo) }}" alt="Logo" style="height: 40px; width: auto;" class="mr-2 rounded-circle">
                 @else
-                    <i class="fas fa-vote-yea"></i>
+                <i class="fas fa-vote-yea"></i>
                 @endif
                 <span>{{ $setting?->election_name ?? 'E-Voting BEM' }}</span>
             </a>
@@ -255,47 +263,60 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
-                        <a class="nav-link {{ Request::is('/') || Request::is('voting') ? 'active' : '' }}" 
-                           href="{{ url('/') }}">
+                        <a class="nav-link {{ Request::is('/') || Request::is('voting') ? 'active' : '' }}"
+                            href="{{ url('/') }}">
                             <i class="fas fa-th-large"></i>
                             <span>Voting</span>
                         </a>
                     </li>
                     @auth
-                        @if(auth()->user()->role === 'admin')
-                            <li class="nav-item">
-                                <a class="nav-link {{ Request::is('dashboard') ? 'active' : '' }}" 
-                                   href="{{ url('/dashboard') }}">
-                                    <i class="fas fa-tachometer-alt"></i>
-                                    <span>Dashboard</span>
-                                </a>
-                            </li>
-                        @endif
-                        <li class="nav-item">
-                            <span class="nav-link user-badge">
-                                <i class="fas fa-user"></i>
-                                <span>{{ Str::limit(auth()->user()->name, 20) }}</span>
-                            </span>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ Request::is('profile*') ? 'active' : '' }}" href="{{ route('profile.index') }}">
-                                <i class="fas fa-user-circle"></i>
-                                <span>Profile</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url('/logout') }}">
-                                <i class="fas fa-sign-out-alt"></i>
-                                <span>Logout</span>
-                            </a>
-                        </li>
+                    @if(auth()->user()->role === 'admin')
+                    <li class="nav-item">
+                        <a class="nav-link {{ Request::is('dashboard') ? 'active' : '' }}"
+                            href="{{ url('/dashboard') }}">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    @endif
+                    <li class="nav-item">
+                        <span class="nav-link user-badge">
+                            <i class="fas fa-user"></i>
+                            <span>{{ Str::limit(auth()->user()->name, 20) }}</span>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ Request::is('profile*') ? 'active' : '' }}" href="{{ route('profile.index') }}">
+                            <i class="fas fa-user-circle"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url('/logout') }}">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </li>
+                    @elseif(isset($attendance))
+                    <li class="nav-item">
+                        <span class="nav-link user-badge">
+                            <i class="fas fa-user"></i>
+                            <span>{{ Str::limit($attendance->mahasiswa->name, 20) }}</span>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link user-badge" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2);">
+                            <i class="fas fa-desktop"></i>
+                            <span>{{ $attendance->votingBooth->nama_booth ?? 'Booth' }}</span>
+                        </span>
+                    </li>
                     @else
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url('/login') }}">
-                                <i class="fas fa-user-shield"></i>
-                                <span>Admin</span>
-                            </a>
-                        </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url('/login') }}">
+                            <i class="fas fa-user-shield"></i>
+                            <span>Admin</span>
+                        </a>
+                    </li>
                     @endauth
                 </ul>
             </div>
@@ -304,18 +325,18 @@
 
     <main class="container">
         @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show">
-                <i class="fas fa-check-circle"></i>
-                <span>{{ session('success') }}</span>
-                <button type="button" class="close" data-dismiss="alert">&times;</button>
-            </div>
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle"></i>
+            <span>{{ session('success') }}</span>
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
         @endif
         @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show">
-                <i class="fas fa-exclamation-circle"></i>
-                <span>{{ session('error') }}</span>
-                <button type="button" class="close" data-dismiss="alert">&times;</button>
-            </div>
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>{{ session('error') }}</span>
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
         @endif
         @yield('content')
     </main>

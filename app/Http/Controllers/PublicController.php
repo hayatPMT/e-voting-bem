@@ -20,7 +20,7 @@ class PublicController extends Controller
         }
 
         $kandidat = Kandidat::withCount('votes')->get();
-        $totalSuara = Vote::count();
+        $totalSuara = Kandidat::sum('total_votes') + Vote::count();
         $totalMahasiswa = User::where('role', 'mahasiswa')->count();
 
         return view('public.index', [

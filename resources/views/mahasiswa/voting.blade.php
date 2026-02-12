@@ -6,7 +6,7 @@
 <div class="container-fluid px-3 px-md-4" style="max-width: 1400px;">
     <!-- Already Voted Banner -->
     @auth
-    @if(auth()->user()->vote)
+    @if(auth()->user()->mahasiswaProfile->has_voted ?? false)
     <div class="alert alert-success border-0 mb-4"
         style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
                             border-radius: 16px;
@@ -601,21 +601,9 @@
     function updateCountdown() {
         // Use timestamps directly from server to avoid timezone parsing issues
         // Defaults: If not set, assume voting started 1 minute ago and ends in 24 hours (Active State)
-        const serverNow = {
-            {
-                now() - > timestamp * 1000
-            }
-        };
-        const startTime = {
-            {
-                $setting ? - > voting_start ? $setting - > voting_start - > timestamp * 1000 : now() - > subMinute() - > timestamp * 1000
-            }
-        };
-        const endTime = {
-            {
-                $setting ? - > voting_end ? $setting - > voting_end - > timestamp * 1000 : now() - > addHours(24) - > timestamp * 1000
-            }
-        };
+        const serverNow = <?php echo now()->timestamp * 1000; ?>;
+        const startTime = <?php echo ($setting && $setting->voting_start) ? $setting->voting_start->timestamp * 1000 : now()->subMinute()->timestamp * 1000; ?>;
+        const endTime = <?php echo ($setting && $setting->voting_end) ? $setting->voting_end->timestamp * 1000 : now()->addHours(24)->timestamp * 1000; ?>;
 
         // Calculate offset between client clock and server clock
         const clientNow = new Date().getTime();
@@ -752,9 +740,7 @@
 
         @if(session('voted_candidate'))
         console.log('Vote session detected, showing modal...');
-        console.log('Candidate:', '{{ session('
-            voted_candidate ')->nama ?? '
-            Unknown ' }}');
+        console.log('Candidate:', '<?php echo session('voted_candidate')->nama ?? 'Unknown'; ?>');
 
         // Use setTimeout to ensure DOM is fully loaded
         setTimeout(function() {
