@@ -23,6 +23,7 @@ class MahasiswaProfile extends Model
         'status',
         'has_voted',
         'voted_at',
+        'vote_receipt',
     ];
 
     protected $casts = [
@@ -61,7 +62,7 @@ class MahasiswaProfile extends Model
     {
         $this->update([
             'has_voted' => true,
-            // 'voted_at' => now(), // Removed for anonymity
+            'voted_at' => now(),
         ]);
     }
 

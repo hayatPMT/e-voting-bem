@@ -194,7 +194,7 @@
                     <!-- Vote Button -->
                     <div class="mt-auto">
                         @auth
-                        @if (auth()->user()->vote)
+                        @if (auth()->user()->mahasiswaProfile->has_voted ?? false)
                         <button class="btn btn-block disabled" disabled
                             style="background: #e5e7eb; 
                                                        color: #6b7280; 
@@ -348,7 +348,7 @@
                     <i class="fas fa-times mr-2"></i>Tutup
                 </button>
                 @auth
-                @if (!auth()->user()->vote && auth()->user()->role === 'mahasiswa')
+                @if (!(auth()->user()->mahasiswaProfile->has_voted ?? false) && auth()->user()->role === 'mahasiswa')
                 <a href="/vote/{{ $k->id }}"
                     class="btn px-4 rounded-pill shadow-sm"
                     onclick="return confirm('Apakah Anda yakin memilih {{ $k->nama }}?\n\nPilihan Anda bersifat FINAL dan tidak dapat diubah setelah dikonfirmasi.')"

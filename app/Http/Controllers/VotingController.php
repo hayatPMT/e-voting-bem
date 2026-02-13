@@ -88,20 +88,29 @@ class VotingController extends Controller
         \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             $kandidat = Kandidat::findOrFail($id);
-            $kandidat->incrementVote();
+            // Removed redundant total_votes increment as it causes double-counting in rekap
+            // $kandidat->incrementVote();
 
-            // Create vote record in table (user_id is null for anonymity)
+            // Create anonymous vote record (No user_id linked)
             Vote::create([
                 'user_id' => null,
                 'kandidat_id' => $id,
                 'encrypted_kandidat_id' => encrypt($id),
-                'vote_hash' => hash('sha256', Str::random(40)), // Don't use ID/Time in hash
+                'vote_hash' => hash('sha256', Str::random(40)),
             ]);
 
-            // Mark mahasiswa as voted
+            // Mark mahasiswa as voted and store encrypted receipt
             $mahasiswa = MahasiswaProfile::where('user_id', $userId)->first();
             if ($mahasiswa) {
-                $mahasiswa->markAsVoted();
+                $mahasiswa->update([
+                    'has_voted' => true,
+                    'voted_at' => now(),
+                    'vote_receipt' => encrypt([
+                        'kandidat_id' => $id,
+                        'kandidat_nama' => $kandidat->nama,
+                        'vote_time' => now()->toDateTimeString(),
+                    ])
+                ]);
             }
 
             \Illuminate\Support\Facades\DB::commit();
@@ -130,37 +139,38 @@ class VotingController extends Controller
             return redirect('/voting')->with('error', 'Anda harus login terlebih dahulu.');
         }
 
-        // Get vote record
-        $vote = $user->vote;
-
-        if (! $vote) {
-            return redirect('/voting')->with('error', 'Anda belum melakukan voting.');
-        }
-
-        // Get voted candidate from vote record (not from session)
-        $kandidat = Kandidat::find($vote->kandidat_id);
-
-        if (! $kandidat) {
-            return redirect('/voting')->with('error', 'Data kandidat tidak ditemukan.');
-        }
-
         $mahasiswa = $user->mahasiswaProfile;
-        $voteTime = $vote->created_at;
 
-        // Generate vote hash for verification
-        $voteHash = strtoupper(substr(hash('sha256', $user->id . $vote->kandidat_id . $voteTime->timestamp), 0, 16));
-
-        $data = [
-            'nim' => $mahasiswa->nim ?? 'N/A',
-            'nama' => $user->name,
-            'kandidat' => $kandidat,
-            'vote_time' => $voteTime,
-            'vote_hash' => $voteHash,
-            'qr_data' => 'VOTE-VERIFICATION:' . $voteHash,
-            'setting' => Setting::first(),
-        ];
+        if (!$mahasiswa || !$mahasiswa->has_voted || !$mahasiswa->vote_receipt) {
+            return redirect('/voting')->with('error', 'Anda belum melakukan voting atau data bukti voting tidak ditemukan.');
+        }
 
         try {
+            // Decrypt the receipt data from student profile
+            $receiptData = decrypt($mahasiswa->vote_receipt);
+
+            $kandidat = Kandidat::find($receiptData['kandidat_id']);
+
+            if (!$kandidat) {
+                // Fallback to name stored in receipt if candidate was deleted
+                $kandidat = (object)['nama' => $receiptData['kandidat_nama'], 'foto' => null];
+            }
+
+            $voteTime = Carbon::parse($receiptData['vote_time']);
+
+            // Generate a verification hash based on secure user info and receipt (for print verification)
+            $voteHash = strtoupper(substr(hash('sha256', $user->id . $receiptData['kandidat_id'] . $voteTime->timestamp), 0, 16));
+
+            $data = [
+                'nim' => $mahasiswa->nim ?? 'N/A',
+                'nama' => $user->name,
+                'kandidat' => $kandidat,
+                'vote_time' => $voteTime,
+                'vote_hash' => $voteHash,
+                'qr_data' => 'VOTE-VERIFICATION:' . $voteHash,
+                'setting' => Setting::first(),
+            ];
+
             $pdf = Pdf::loadView('pdf.vote-receipt', $data);
             $pdf->setPaper('a4', 'portrait');
 
@@ -170,7 +180,7 @@ class VotingController extends Controller
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('PDF Generation Error: ' . $e->getMessage());
 
-            return redirect('/voting')->with('error', 'Gagal membuat PDF. Silakan coba lagi atau hubungi admin.');
+            return redirect('/voting')->with('error', 'Gagal membuat PDF: ' . $e->getMessage());
         }
     }
 }

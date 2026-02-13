@@ -206,18 +206,41 @@ class MahasiswaController extends Controller
     }
 
     /**
-     * Toggle voting eligibility
+     * Resets a student's voting status and corrects the vote count
      */
     public function toggleVotingStatus($id)
     {
+        /** @var MahasiswaProfile $mahasiswa */
         $mahasiswa = MahasiswaProfile::findOrFail($id);
 
-        // Reset voting status if needed
+        if ($mahasiswa->has_voted && $mahasiswa->vote_receipt) {
+            try {
+                // 1. Decrypt the receipt to find out which candidate they voted for
+                $receiptData = decrypt($mahasiswa->vote_receipt);
+                $kandidatId = $receiptData['kandidat_id'];
+
+                // 2. Find ONE anonymous vote record for that candidate and delete it
+                // This ensures the rekap count decreases by 1 for the correct candidate
+                $vote = \App\Models\Vote::where('kandidat_id', $kandidatId)
+                    ->whereNull('user_id')
+                    ->first();
+
+                if ($vote) {
+                    $vote->delete();
+                }
+            } catch (\Exception $e) {
+                // Log if deduction fails (e.g. data corrupt), but still allow reset
+                \Illuminate\Support\Facades\Log::warning("Could not deduct vote count during reset for student {$id}: " . $e->getMessage());
+            }
+        }
+
+        // 3. Reset the student's personal voting status
         $mahasiswa->update([
             'has_voted' => false,
             'voted_at' => null,
+            'vote_receipt' => null,
         ]);
 
-        return back()->with('success', 'Status voting mahasiswa berhasil direset');
+        return back()->with('success', 'Status voting mahasiswa berhasil direset dan perolehan suara telah dikurangi secara otomatis.');
     }
 }
