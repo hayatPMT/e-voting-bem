@@ -31,13 +31,7 @@ class UserSeeder extends Seeder
             'user_id' => $admin->id,
             'phone' => '08123456789',
             'department' => 'BEM Kesejahteraan',
-            'address' => 'Kantor BEM Kampus',
-            'city' => 'Surabaya',
-            'province' => 'Jawa Timur',
-            'postal_code' => '60111',
-            'bio' => 'Administrator Sistem E-Voting BEM',
             'status' => 'active',
-            'appointed_at' => now(),
         ]);
 
         // Create sample mahasiswa users
@@ -95,9 +89,7 @@ class UserSeeder extends Seeder
                 'program_studi' => $data['program_studi'],
                 'angkatan' => $data['angkatan'],
                 'semester' => 5,
-                'phone' => '08'.rand(100000000, 999999999),
-                'city' => 'Surabaya',
-                'province' => 'Jawa Timur',
+                'phone' => '08' . rand(100000000, 999999999),
                 'status' => 'active',
                 'has_voted' => false,
             ]);
@@ -111,7 +103,7 @@ class UserSeeder extends Seeder
 
         $this->command->info('User accounts created successfully!');
         $this->command->info('Admin account: admin@bem.ac.id / admin12345');
-        $this->command->info('Mahasiswa accounts created: '.count($mahasiswaData));
+        $this->command->info('Mahasiswa accounts created: ' . count($mahasiswaData));
         $this->command->info('Settings initialized (Voting Open for 24h)');
     }
 }

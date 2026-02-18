@@ -31,6 +31,7 @@ class ShuffleVotes extends Command
 
         if ($votes->isEmpty()) {
             $this->warn('No votes found to shuffle.');
+
             return;
         }
 
@@ -59,10 +60,10 @@ class ShuffleVotes extends Command
             \Illuminate\Support\Facades\DB::commit();
             $bar->finish();
             $this->newLine();
-            $this->info('Successfully shuffled ' . $votes->count() . ' votes.');
+            $this->info('Successfully shuffled '.$votes->count().' votes.');
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
-            $this->error('Error shuffling votes: ' . $e->getMessage());
+            $this->error('Error shuffling votes: '.$e->getMessage());
         }
     }
 }

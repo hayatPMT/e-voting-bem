@@ -12,21 +12,11 @@ class AdminProfile extends Model
         'user_id',
         'phone',
         'department',
-        'address',
-        'city',
-        'province',
-        'postal_code',
         'avatar',
-        'bio',
         'status',
-        'appointed_at',
-        'terminated_at',
     ];
 
-    protected $casts = [
-        'appointed_at' => 'datetime',
-        'terminated_at' => 'datetime',
-    ];
+    protected $casts = [];
 
     /**
      * Get the user that owns the admin profile
@@ -36,13 +26,7 @@ class AdminProfile extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the full address
-     */
-    public function getFullAddressAttribute()
-    {
-        return "{$this->address}, {$this->city}, {$this->province} {$this->postal_code}";
-    }
+
 
     /**
      * Check if admin is active

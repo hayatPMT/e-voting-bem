@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Imports\MahasiswaImport;
 use App\Exports\MahasiswaTemplateExport;
-use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\MahasiswaImport;
 use App\Models\MahasiswaProfile;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MahasiswaController extends Controller
 {
@@ -88,9 +88,10 @@ class MahasiswaController extends Controller
 
         try {
             Excel::import(new MahasiswaImport, $request->file('file'));
+
             return redirect()->route('admin.mahasiswa.index')->with('success', 'Data mahasiswa berhasil diimport.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal import data: ' . $e->getMessage());
+            return back()->with('error', 'Gagal import data: '.$e->getMessage());
         }
     }
 
@@ -171,11 +172,11 @@ class MahasiswaController extends Controller
     public function export()
     {
         $headers = [
-            "Content-type" => "text/csv",
-            "Content-Disposition" => "attachment; filename=mahasiswa_" . date('Y-m-d_H-i-s') . ".csv",
-            "Pragma" => "no-cache",
-            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
-            "Expires" => "0"
+            'Content-type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename=mahasiswa_'.date('Y-m-d_H-i-s').'.csv',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
         ];
 
         $columns = ['NIM', 'Nama', 'Email', 'Program Studi', 'Angkatan', 'Semester', 'Status', 'Sudah Voting'];
@@ -194,7 +195,7 @@ class MahasiswaController extends Controller
                         $m->angkatan,
                         $m->semester,
                         $m->status,
-                        $m->has_voted ? 'Ya' : 'Tidak'
+                        $m->has_voted ? 'Ya' : 'Tidak',
                     ]);
                 }
             });
@@ -230,7 +231,7 @@ class MahasiswaController extends Controller
                 }
             } catch (\Exception $e) {
                 // Log if deduction fails (e.g. data corrupt), but still allow reset
-                \Illuminate\Support\Facades\Log::warning("Could not deduct vote count during reset for student {$id}: " . $e->getMessage());
+                \Illuminate\Support\Facades\Log::warning("Could not deduct vote count during reset for student {$id}: ".$e->getMessage());
             }
         }
 

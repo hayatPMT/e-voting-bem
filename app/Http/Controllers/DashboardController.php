@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kandidat;
-use App\Models\Vote;
 
 class DashboardController extends Controller
 {

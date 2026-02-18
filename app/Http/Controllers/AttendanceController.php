@@ -149,6 +149,7 @@ class AttendanceController extends Controller
         // Check if already voted
         if ($attendance->mahasiswa->mahasiswaProfile->has_voted) {
             $attendance->markAsVoted();
+
             return redirect()->route('voting-booth.standby', $attendance->voting_booth_id)->with('error', 'Mahasiswa sudah melakukan voting');
         }
 
@@ -218,7 +219,7 @@ class AttendanceController extends Controller
             'voting_booth_id' => 'required|exists:voting_booths,id',
         ]);
 
-        Log::info('Petugas set booth: ' . $request->voting_booth_id . ' by user ' . Auth::id());
+        Log::info('Petugas set booth: '.$request->voting_booth_id.' by user '.Auth::id());
         session(['active_booth_id' => $request->voting_booth_id]);
         session()->save();
 

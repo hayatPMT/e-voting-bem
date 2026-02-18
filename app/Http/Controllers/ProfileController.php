@@ -32,22 +32,17 @@ class ProfileController extends Controller
         // Validation rules based on role
         $rules = [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,'.$user->id,
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:255',
-            'city' => 'nullable|string|max:100',
-            'province' => 'nullable|string|max:100',
-            'postal_code' => 'nullable|string|max:10',
         ];
 
         if ($user->isMahasiswa()) {
-            $rules['nim'] = 'required|string|max:20|unique:mahasiswa_profiles,nim,'.($profile->id ?? '');
+            $rules['nim'] = 'required|string|max:20|unique:mahasiswa_profiles,nim,' . ($profile->id ?? '');
             $rules['program_studi'] = 'nullable|string|max:100';
             $rules['angkatan'] = 'nullable|string|max:4';
             $rules['semester'] = 'nullable|integer|min:1|max:14';
         } else {
             $rules['department'] = 'nullable|string|max:100';
-            $rules['bio'] = 'nullable|string|max:500';
         }
 
         $validated = $request->validate($rules);
@@ -62,10 +57,6 @@ class ProfileController extends Controller
         if ($profile) {
             $profileData = [
                 'phone' => $validated['phone'] ?? null,
-                'address' => $validated['address'] ?? null,
-                'city' => $validated['city'] ?? null,
-                'province' => $validated['province'] ?? null,
-                'postal_code' => $validated['postal_code'] ?? null,
             ];
 
             if ($user->isMahasiswa()) {
@@ -75,7 +66,6 @@ class ProfileController extends Controller
                 $profileData['semester'] = $validated['semester'] ?? null;
             } else {
                 $profileData['department'] = $validated['department'] ?? null;
-                $profileData['bio'] = $validated['bio'] ?? null;
             }
 
             $profile->update($profileData);

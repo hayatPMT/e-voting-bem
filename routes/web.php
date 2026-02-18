@@ -152,7 +152,7 @@ Route::get('/api/chart', function () {
 
     return response()->json([
         'labels' => $data->pluck('nama'),
-        'values' => $data->map(fn($k) => ($k->votes_count ?? 0) + ($k->total_votes ?? 0)),
+        'values' => $data->map(fn ($k) => ($k->votes_count ?? 0) + ($k->total_votes ?? 0)),
     ]);
 });
 
@@ -162,5 +162,5 @@ Route::get('/api/chart', function () {
 |--------------------------------------------------------------------------
 */
 if (config('app.debug')) {
-    require __DIR__ . '/test-pdf.php';
+    require __DIR__.'/test-pdf.php';
 }

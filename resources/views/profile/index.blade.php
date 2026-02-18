@@ -172,38 +172,16 @@
                             <label class="font-weight-600">Departemen</label>
                             <input type="text" name="department" class="form-control" value="{{ old('department', $profile->department ?? '') }}" style="border-radius: 10px;">
                         </div>
-                        <div class="mb-3">
-                            <label class="font-weight-600">Bio</label>
-                            <textarea name="bio" class="form-control" rows="3" style="border-radius: 10px;">{{ old('bio', $profile->bio ?? '') }}</textarea>
-                        </div>
                         @endif
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-12 mb-3">
                                 <label class="font-weight-600">Telepon</label>
                                 <input type="text" name="phone" class="form-control" value="{{ old('phone', $profile->phone ?? '') }}" style="border-radius: 10px;">
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="font-weight-600">Kota</label>
-                                <input type="text" name="city" class="form-control" value="{{ old('city', $profile->city ?? '') }}" style="border-radius: 10px;">
-                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="font-weight-600">Alamat</label>
-                            <textarea name="address" class="form-control" rows="2" style="border-radius: 10px;">{{ old('address', $profile->address ?? '') }}</textarea>
-                        </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="font-weight-600">Provinsi</label>
-                                <input type="text" name="province" class="form-control" value="{{ old('province', $profile->province ?? '') }}" style="border-radius: 10px;">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="font-weight-600">Kode Pos</label>
-                                <input type="text" name="postal_code" class="form-control" value="{{ old('postal_code', $profile->postal_code ?? '') }}" style="border-radius: 10px;">
-                            </div>
-                        </div>
 
                         <div class="text-right">
                             <button type="submit" class="btn px-4 py-2" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 10px; font-weight: 600;">

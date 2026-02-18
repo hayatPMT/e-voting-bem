@@ -6,12 +6,9 @@ use App\Models\Kandidat;
 use App\Models\MahasiswaProfile;
 use App\Models\Setting;
 use App\Models\Vote;
-use App\Services\VoteEncryptionService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class VotingController extends Controller
@@ -48,7 +45,7 @@ class VotingController extends Controller
         $user = Auth::user();
 
         if (! $user) {
-            return redirect('/verifikasi?kandidat=' . $id)->with('error', 'Silakan verifikasi NIM dan password Anda terlebih dahulu.');
+            return redirect('/verifikasi?kandidat='.$id)->with('error', 'Silakan verifikasi NIM dan password Anda terlebih dahulu.');
         }
 
         if ($user->role !== 'mahasiswa') {
@@ -75,10 +72,10 @@ class VotingController extends Controller
         }
 
         if ($startTime && $now->lt($startTime)) {
-            return back()->with('error', $scheduleName . ' belum dimulai. Harap kembali pada ' . $startTime->format('d M Y H:i'));
+            return back()->with('error', $scheduleName.' belum dimulai. Harap kembali pada '.$startTime->format('d M Y H:i'));
         }
         if ($endTime && $now->gt($endTime)) {
-            return back()->with('error', $scheduleName . ' sudah ditutup pada ' . $endTime->format('d M Y H:i'));
+            return back()->with('error', $scheduleName.' sudah ditutup pada '.$endTime->format('d M Y H:i'));
         }
 
         // Introduce random delay (0.5 to 2.5 seconds) to break timestamp matching between profile update and vote cast
@@ -109,14 +106,14 @@ class VotingController extends Controller
                         'kandidat_id' => $id,
                         'kandidat_nama' => $kandidat->nama,
                         'vote_time' => now()->toDateTimeString(),
-                    ])
+                    ]),
                 ]);
             }
 
             \Illuminate\Support\Facades\DB::commit();
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
-            \Illuminate\Support\Facades\Log::error('Voting Error: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Voting Error: '.$e->getMessage());
 
             return back()->with('error', 'Terjadi kesalahan saat menyimpan suara Anda. Silakan coba lagi.');
         }
@@ -141,7 +138,7 @@ class VotingController extends Controller
 
         $mahasiswa = $user->mahasiswaProfile;
 
-        if (!$mahasiswa || !$mahasiswa->has_voted || !$mahasiswa->vote_receipt) {
+        if (! $mahasiswa || ! $mahasiswa->has_voted || ! $mahasiswa->vote_receipt) {
             return redirect('/voting')->with('error', 'Anda belum melakukan voting atau data bukti voting tidak ditemukan.');
         }
 
@@ -151,15 +148,15 @@ class VotingController extends Controller
 
             $kandidat = Kandidat::find($receiptData['kandidat_id']);
 
-            if (!$kandidat) {
+            if (! $kandidat) {
                 // Fallback to name stored in receipt if candidate was deleted
-                $kandidat = (object)['nama' => $receiptData['kandidat_nama'], 'foto' => null];
+                $kandidat = (object) ['nama' => $receiptData['kandidat_nama'], 'foto' => null];
             }
 
             $voteTime = Carbon::parse($receiptData['vote_time']);
 
             // Generate a verification hash based on secure user info and receipt (for print verification)
-            $voteHash = strtoupper(substr(hash('sha256', $user->id . $receiptData['kandidat_id'] . $voteTime->timestamp), 0, 16));
+            $voteHash = strtoupper(substr(hash('sha256', $user->id.$receiptData['kandidat_id'].$voteTime->timestamp), 0, 16));
 
             $data = [
                 'nim' => $mahasiswa->nim ?? 'N/A',
@@ -167,20 +164,20 @@ class VotingController extends Controller
                 'kandidat' => $kandidat,
                 'vote_time' => $voteTime,
                 'vote_hash' => $voteHash,
-                'qr_data' => 'VOTE-VERIFICATION:' . $voteHash,
+                'qr_data' => 'VOTE-VERIFICATION:'.$voteHash,
                 'setting' => Setting::first(),
             ];
 
             $pdf = Pdf::loadView('pdf.vote-receipt', $data);
             $pdf->setPaper('a4', 'portrait');
 
-            $filename = 'Bukti-Voting-' . ($mahasiswa->nim ?? $user->id) . '-' . now()->format('YmdHis') . '.pdf';
+            $filename = 'Bukti-Voting-'.($mahasiswa->nim ?? $user->id).'-'.now()->format('YmdHis').'.pdf';
 
             return $pdf->download($filename);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('PDF Generation Error: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('PDF Generation Error: '.$e->getMessage());
 
-            return redirect('/voting')->with('error', 'Gagal membuat PDF: ' . $e->getMessage());
+            return redirect('/voting')->with('error', 'Gagal membuat PDF: '.$e->getMessage());
         }
     }
 }

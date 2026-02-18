@@ -15,10 +15,6 @@ class MahasiswaProfile extends Model
         'angkatan',
         'semester',
         'phone',
-        'address',
-        'city',
-        'province',
-        'postal_code',
         'avatar',
         'status',
         'has_voted',
@@ -39,13 +35,7 @@ class MahasiswaProfile extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the full address
-     */
-    public function getFullAddressAttribute()
-    {
-        return "{$this->address}, {$this->city}, {$this->province} {$this->postal_code}";
-    }
+
 
     /**
      * Check if mahasiswa is active

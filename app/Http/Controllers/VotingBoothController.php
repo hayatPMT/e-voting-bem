@@ -131,6 +131,7 @@ class VotingBoothController extends Controller
         // Check if student already voted
         if ($approval->mahasiswa->mahasiswaProfile->has_voted) {
             $approval->markAsVoted();
+
             return back()->with('error', 'Mahasiswa tersebut sudah melakukan voting.');
         }
 
