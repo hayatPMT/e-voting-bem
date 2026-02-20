@@ -24,7 +24,7 @@ class MahasiswaProfile extends Model
 
     protected $casts = [
         'has_voted' => 'boolean',
-        'voted_at' => 'datetime',
+        'voted_at' => 'date',
     ];
 
     /**
@@ -34,8 +34,6 @@ class MahasiswaProfile extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-
 
     /**
      * Check if mahasiswa is active
@@ -52,7 +50,7 @@ class MahasiswaProfile extends Model
     {
         $this->update([
             'has_voted' => true,
-            'voted_at' => now(),
+            'voted_at' => today(),
         ]);
     }
 

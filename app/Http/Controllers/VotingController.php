@@ -101,7 +101,7 @@ class VotingController extends Controller
             if ($mahasiswa) {
                 $mahasiswa->update([
                     'has_voted' => true,
-                    'voted_at' => now(),
+                    'voted_at' => today(),
                     'vote_receipt' => encrypt([
                         'kandidat_id' => $id,
                         'kandidat_nama' => $kandidat->nama,
