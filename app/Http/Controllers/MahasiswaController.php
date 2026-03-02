@@ -242,6 +242,9 @@ class MahasiswaController extends Controller
             'vote_receipt' => null,
         ]);
 
-        return back()->with('success', 'Status voting mahasiswa berhasil direset dan perolehan suara telah dikurangi secara otomatis.');
+        // 4. Reset attendance approval (offline register) to allow re-voting at booth
+        \App\Models\AttendanceApproval::where('mahasiswa_id', $mahasiswa->user_id)->delete();
+
+        return back()->with('success', 'Status voting mahasiswa berhasil direset, data kehadiran dihapus, dan perolehan suara telah dikurangi secara otomatis.');
     }
 }

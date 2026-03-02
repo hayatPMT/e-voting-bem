@@ -115,15 +115,16 @@ class AttendanceController extends Controller
             return back()->with('error', 'Mahasiswa ini sudah melakukan voting (Online/Offline)');
         }
 
-        // Create attendance approval
+        // Create attendance approval for OFFLINE mode only
         $attendance = AttendanceApproval::create([
             'mahasiswa_id' => $request->mahasiswa_id,
             'petugas_id' => Auth::id(),
             'status' => 'approved',
             'approved_at' => now(),
+            'mode' => 'offline', // Explicitly set mode to offline
         ]);
 
-        // Generate session token
+        // Generate session token only for offline attendance
         $token = $attendance->generateSessionToken();
 
         return redirect()
@@ -219,7 +220,7 @@ class AttendanceController extends Controller
             'voting_booth_id' => 'required|exists:voting_booths,id',
         ]);
 
-        Log::info('Petugas set booth: '.$request->voting_booth_id.' by user '.Auth::id());
+        Log::info('Petugas set booth: ' . $request->voting_booth_id . ' by user ' . Auth::id());
         session(['active_booth_id' => $request->voting_booth_id]);
         session()->save();
 

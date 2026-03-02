@@ -36,6 +36,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/voting', [VotingController::class, 'index'])->name('voting.index');
     Route::get('/vote/{id}', [VotingController::class, 'vote'])->name('voting.vote');
     Route::get('/vote-receipt/download', [VotingController::class, 'downloadReceipt'])->name('voting.receipt.download');
+    Route::post('/voting/confirm-attendance', [VotingController::class, 'confirmAttendance'])->name('voting.confirm-attendance');
 
     // Profile Management (untuk semua user yang login)
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
@@ -78,6 +79,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Admin dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/rekap', [RekapController::class, 'index'])->name('admin.rekap');
+    Route::get('/admin/attendance', [RekapController::class, 'attendanceReport'])->name('admin.attendance.index');
+    Route::get('/admin/attendance/export', [RekapController::class, 'exportAttendance'])->name('admin.attendance.export');
     // Kandidat (calon)
     Route::get('/admin/kandidat', [KandidatController::class, 'index'])->name('admin.kandidat.index');
     Route::get('/admin/kandidat/create', [KandidatController::class, 'create'])->name('admin.kandidat.create');

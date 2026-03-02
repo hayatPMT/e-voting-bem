@@ -13,6 +13,7 @@ class AttendanceApproval extends Model
         'petugas_id',
         'voting_booth_id',
         'status',
+        'mode',
         'approved_at',
         'voted_at',
         'session_token',

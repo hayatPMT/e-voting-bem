@@ -17,10 +17,24 @@ class VotingController extends Controller
     {
         $user = Auth::user();
         $mahasiswa = null;
+        $attendance = null;
+        $tokenValidated = $user ? session('token_validated_for_user_' . $user->id, false) : false;
 
         // Get mahasiswa profile if user is mahasiswa
         if ($user && $user->role === 'mahasiswa') {
             $mahasiswa = $user->mahasiswaProfile;
+
+            // Check for today's online attendance record
+            $attendance = \App\Models\AttendanceApproval::where('mahasiswa_id', $user->id)
+                ->whereDate('created_at', today())
+                ->latest()
+                ->first();
+
+            // If attendance is already approved for online, ensure session is set
+            if ($attendance && $attendance->mode === 'online' && $attendance->status === 'approved') {
+                session(['token_validated_for_user_' . $user->id => true]);
+                $tokenValidated = true;
+            }
         }
 
         $currentTahapan = \App\Models\Tahapan::getCurrentTahapan();
@@ -32,11 +46,39 @@ class VotingController extends Controller
             $setting->voting_end = $currentTahapan->waktu_selesai;
         }
 
+        $now = now();
+        // Get current system time from setting or tahapan
+        $startTime = $setting?->voting_start;
+        $endTime = $setting?->voting_end;
+
+        if ($currentTahapan) {
+            $startTime = $currentTahapan->waktu_mulai;
+            $endTime = $currentTahapan->waktu_selesai;
+        }
+
+        $initialDiff = ['days' => '00', 'hours' => '00', 'minutes' => '00', 'seconds' => '00'];
+
+        if ($startTime && $endTime) {
+            $targetTime = $now->lt($startTime) ? $startTime : $endTime;
+            if ($now->lt($endTime)) {
+                $diff = $now->diff($targetTime);
+                $initialDiff = [
+                    'days' => str_pad($diff->d + ($diff->m * 30), 2, '0', STR_PAD_LEFT),
+                    'hours' => str_pad($diff->h, 2, '0', STR_PAD_LEFT),
+                    'minutes' => str_pad($diff->i, 2, '0', STR_PAD_LEFT),
+                    'seconds' => str_pad($diff->s, 2, '0', STR_PAD_LEFT),
+                ];
+            }
+        }
+
         return view('mahasiswa.voting', [
             'kandidat' => Kandidat::all(),
             'setting' => $setting,
             'mahasiswa' => $mahasiswa,
             'currentTahapan' => $currentTahapan,
+            'attendance' => $attendance,
+            'tokenValidated' => $tokenValidated,
+            'initialDiff' => $initialDiff,
         ]);
     }
 
@@ -45,7 +87,7 @@ class VotingController extends Controller
         $user = Auth::user();
 
         if (! $user) {
-            return redirect('/verifikasi?kandidat='.$id)->with('error', 'Silakan verifikasi NIM dan password Anda terlebih dahulu.');
+            return redirect('/verifikasi?kandidat=' . $id)->with('error', 'Silakan verifikasi NIM dan password Anda terlebih dahulu.');
         }
 
         if ($user->role !== 'mahasiswa') {
@@ -72,10 +114,18 @@ class VotingController extends Controller
         }
 
         if ($startTime && $now->lt($startTime)) {
-            return back()->with('error', $scheduleName.' belum dimulai. Harap kembali pada '.$startTime->format('d M Y H:i'));
+            return back()->with('error', $scheduleName . ' belum dimulai. Harap kembali pada ' . $startTime->format('d M Y H:i'));
         }
         if ($endTime && $now->gt($endTime)) {
-            return back()->with('error', $scheduleName.' sudah ditutup pada '.$endTime->format('d M Y H:i'));
+            return back()->with('error', $scheduleName . ' sudah ditutup pada ' . $endTime->format('d M Y H:i'));
+        }
+
+        // Security check for online voters
+        if ($user->role === 'mahasiswa' && request()->routeIs('voting.vote')) {
+            $tokenValidated = session('token_validated_for_user_' . $userId, false);
+            if (! $tokenValidated) {
+                return redirect('/voting')->with('error', 'Silakan konfirmasi kehadiran terlebih dahulu.');
+            }
         }
 
         // Introduce random delay (0.5 to 2.5 seconds) to break timestamp matching between profile update and vote cast
@@ -110,10 +160,18 @@ class VotingController extends Controller
                 ]);
             }
 
+            // Mark attendance as voted if exists
+            \App\Models\AttendanceApproval::where('mahasiswa_id', $userId)
+                ->whereDate('created_at', today())
+                ->update([
+                    'status' => 'voted',
+                    'voted_at' => now(),
+                ]);
+
             \Illuminate\Support\Facades\DB::commit();
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
-            \Illuminate\Support\Facades\Log::error('Voting Error: '.$e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Voting Error: ' . $e->getMessage());
 
             return back()->with('error', 'Terjadi kesalahan saat menyimpan suara Anda. Silakan coba lagi.');
         }
@@ -156,7 +214,7 @@ class VotingController extends Controller
             $voteTime = Carbon::parse($receiptData['vote_time']);
 
             // Generate a verification hash based on secure user info and receipt (for print verification)
-            $voteHash = strtoupper(substr(hash('sha256', $user->id.$receiptData['kandidat_id'].$voteTime->timestamp), 0, 16));
+            $voteHash = strtoupper(substr(hash('sha256', $user->id . $receiptData['kandidat_id'] . $voteTime->timestamp), 0, 16));
 
             $data = [
                 'nim' => $mahasiswa->nim ?? 'N/A',
@@ -164,20 +222,110 @@ class VotingController extends Controller
                 'kandidat' => $kandidat,
                 'vote_time' => $voteTime,
                 'vote_hash' => $voteHash,
-                'qr_data' => 'VOTE-VERIFICATION:'.$voteHash,
+                'qr_data' => 'VOTE-VERIFICATION:' . $voteHash,
                 'setting' => Setting::first(),
             ];
 
             $pdf = Pdf::loadView('pdf.vote-receipt', $data);
             $pdf->setPaper('a4', 'portrait');
 
-            $filename = 'Bukti-Voting-'.($mahasiswa->nim ?? $user->id).'-'.now()->format('YmdHis').'.pdf';
+            $filename = 'Bukti-Voting-' . ($mahasiswa->nim ?? $user->id) . '-' . now()->format('YmdHis') . '.pdf';
 
             return $pdf->download($filename);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('PDF Generation Error: '.$e->getMessage());
+            \Illuminate\Support\Facades\Log::error('PDF Generation Error: ' . $e->getMessage());
 
-            return redirect('/voting')->with('error', 'Gagal membuat PDF: '.$e->getMessage());
+            return redirect('/voting')->with('error', 'Gagal membuat PDF: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Confirm attendance for online voting and immediately grant access to voting
+     */
+    public function confirmAttendance()
+    {
+        $user = Auth::user();
+        if (! $user || $user->role !== 'mahasiswa') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        if ($user->mahasiswaProfile?->has_voted) {
+            return response()->json(['success' => false, 'message' => 'Anda sudah melakukan voting.'], 409);
+        }
+
+        $now = Carbon::now();
+        $startTime = null;
+        $endTime = null;
+
+        $currentTahapan = \App\Models\Tahapan::getCurrentTahapan();
+        if ($currentTahapan) {
+            $startTime = $currentTahapan->waktu_mulai;
+            $endTime = $currentTahapan->waktu_selesai;
+        } else {
+            $setting = Setting::first();
+            $startTime = $setting?->voting_start;
+            $endTime = $setting?->voting_end;
+        }
+
+        if (! $startTime || ! $endTime) {
+            return response()->json(['success' => false, 'message' => 'Jadwal voting belum dikonfigurasi.'], 400);
+        }
+
+        if ($now->lt($startTime)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Konfirmasi kehadiran belum dibuka. Voting dimulai pada ' . $startTime->translatedFormat('d M Y H:i') . ' WIB.',
+            ], 400);
+        }
+
+        if ($now->gt($endTime)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Waktu voting sudah berakhir pada ' . $endTime->translatedFormat('d M Y H:i') . ' WIB.',
+            ], 400);
+        }
+
+        // Check for existing attendance today
+        $attendance = \App\Models\AttendanceApproval::where('mahasiswa_id', $user->id)
+            ->whereDate('created_at', today())
+            ->first();
+
+        if ($attendance) {
+            // If already voted
+            if ($attendance->hasVoted()) {
+                return response()->json(['success' => false, 'message' => 'Anda sudah menggunakan hak pilih Anda.'], 409);
+            }
+
+            // Already confirmed - ensure status is approved
+            if ($attendance->status !== 'approved') {
+                $attendance->update(['status' => 'approved', 'approved_at' => now()]);
+            }
+
+            // If it's offline mode, this shouldn't happen
+            if ($attendance->mode === 'offline') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda sudah terdaftar sebagai offline voting. Silakan gunakan token yang diberikan.',
+                ], 409);
+            }
+        } else {
+            // Create new record for ONLINE mode only - NO TOKEN NEEDED
+            $attendance = \App\Models\AttendanceApproval::create([
+                'mahasiswa_id' => $user->id,
+                'petugas_id' => null,
+                'status' => 'approved',
+                'mode' => 'online',
+                'approved_at' => now(),
+                'session_token' => null, // Online students don't get tokens
+            ]);
+        }
+
+        // Immediately grant access for online voting
+        session(['token_validated_for_user_' . $user->id => true]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Kehadiran Anda telah dikonfirmasi! Silakan pilih kandidat.',
+        ]);
     }
 }

@@ -295,6 +295,16 @@
                                 <p>Pengaturan Sistem</p>
                             </a>
                         </li>
+
+                        <li class="nav-header">LAPORAN</li>
+
+                        <li class="nav-item">
+                            <a href="{{ route('admin.attendance.index') }}" class="nav-link {{ request()->routeIs('admin.attendance.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-clipboard-list"></i>
+                                <p>Daftar Hadir</p>
+                            </a>
+                        </li>
+                        
                         <li class="nav-item">
                             <a href="{{ route('admin.rekap') }}" class="nav-link {{ request()->routeIs('admin.rekap') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-chart-pie"></i>
