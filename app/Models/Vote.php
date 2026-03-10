@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class Vote extends Model
 {
     protected $fillable = [
+        'kampus_id',
         'user_id',
         'kandidat_id',
         'encrypted_kandidat_id',
         'vote_hash',
+        'is_abstain',
     ];
 
     protected $casts = [

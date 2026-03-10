@@ -8,7 +8,7 @@ use App\Models\Vote;
 
 class PublicController extends Controller
 {
-    public function index(): \Illuminate\Http\RedirectResponse|\Illuminate\View\View
+    public function index(\Illuminate\Http\Request $request)
     {
         if (\Illuminate\Support\Facades\Auth::check()) {
             /** @var \App\Models\User $user */
@@ -21,15 +21,32 @@ class PublicController extends Controller
             }
         }
 
-        $kandidat = Kandidat::withCount('votes')->get();
-        $totalSuara = Kandidat::sum('total_votes') + Vote::count();
-        $totalMahasiswa = User::where('role', 'mahasiswa')->count();
+        $kampusId = $request->get('kampus_id');
+
+        // Jika tidak ada parameter kampus_id, arahkan ke halaman pilih kampus
+        if (! $kampusId) {
+            $kampuses = \App\Models\Kampus::where('is_active', true)->get();
+
+            return view('public.select_kampus', compact('kampuses'));
+        }
+
+        $kampus = \App\Models\Kampus::findOrFail($kampusId);
+
+        $kandidat = Kandidat::where('kampus_id', $kampusId)->withCount('votes')->get();
+
+        $totalSuara = Kandidat::where('kampus_id', $kampusId)->sum('total_votes')
+            + Vote::whereHas('kandidat', fn ($q) => $q->where('kampus_id', $kampusId))->count();
+
+        $totalMahasiswa = User::where('role', 'mahasiswa')
+            ->where('kampus_id', $kampusId)
+            ->count();
 
         return view('public.index', [
+            'kampus' => $kampus,
             'kandidat' => $kandidat,
             'totalSuara' => $totalSuara,
             'totalMahasiswa' => $totalMahasiswa,
-            'setting' => \App\Models\Setting::first(),
+            'setting' => \App\Models\Setting::where('kampus_id', $kampusId)->first(),
         ]);
     }
 }

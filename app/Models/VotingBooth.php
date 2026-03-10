@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class VotingBooth extends Model
 {
     protected $fillable = [
+        'kampus_id',
         'nama_booth',
         'lokasi',
         'is_active',
@@ -17,6 +18,14 @@ class VotingBooth extends Model
         return [
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Get the campus this booth belongs to
+     */
+    public function kampus(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Kampus::class);
     }
 
     /**

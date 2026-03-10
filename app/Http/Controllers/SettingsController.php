@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
 {
@@ -12,10 +13,13 @@ class SettingsController extends Controller
      */
     public function index()
     {
-        $setting = Setting::first();
+        $kampusId = $this->getKampusId();
+        $setting = Setting::where('kampus_id', $kampusId)->first();
+
         // If no settings exist (should be seeded, but just in case), create a default one
         if (! $setting) {
             $setting = Setting::create([
+                'kampus_id' => $kampusId,
                 'voting_start' => now(),
                 'voting_end' => now()->addDay(),
             ]);
@@ -36,9 +40,11 @@ class SettingsController extends Controller
             'voting_end' => 'required|date|after:voting_start',
         ]);
 
-        $setting = Setting::first();
+        $kampusId = $this->getKampusId();
+        $setting = Setting::where('kampus_id', $kampusId)->first();
 
         $data = [
+            'kampus_id' => $kampusId,
             'election_name' => $request->election_name,
             'voting_start' => $request->voting_start,
             'voting_end' => $request->voting_end,
@@ -48,7 +54,7 @@ class SettingsController extends Controller
         if ($request->hasFile('election_logo')) {
             // Delete old logo if exists
             if ($setting && $setting->election_logo) {
-                \Storage::disk('public')->delete($setting->election_logo);
+                Storage::disk('public')->delete($setting->election_logo);
             }
 
             $logoPath = $request->file('election_logo')->store('election-logos', 'public');

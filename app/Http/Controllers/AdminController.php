@@ -14,6 +14,7 @@ class AdminController extends Controller
     public function index()
     {
         $admins = User::where('role', 'admin')
+            ->where('kampus_id', $this->getKampusId())
             ->with('adminProfile')
             ->paginate(15);
 
@@ -48,6 +49,7 @@ class AdminController extends Controller
             'password' => bcrypt($request->password),
             'role' => 'admin',
             'is_active' => true,
+            'kampus_id' => $this->getKampusId(),
         ]);
 
         AdminProfile::create([
@@ -67,7 +69,9 @@ class AdminController extends Controller
      */
     public function show($id)
     {
-        $admin = User::where('role', 'admin')->findOrFail($id);
+        $admin = User::where('role', 'admin')
+            ->where('kampus_id', $this->getKampusId())
+            ->findOrFail($id);
         $admin->load('adminProfile');
 
         return view('admin.admins.show', compact('admin'));
@@ -78,7 +82,9 @@ class AdminController extends Controller
      */
     public function edit($id)
     {
-        $admin = User::where('role', 'admin')->findOrFail($id);
+        $admin = User::where('role', 'admin')
+            ->where('kampus_id', $this->getKampusId())
+            ->findOrFail($id);
         $admin->load('adminProfile');
 
         return view('admin.admins.edit', compact('admin'));
@@ -89,7 +95,9 @@ class AdminController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $admin = User::where('role', 'admin')->findOrFail($id);
+        $admin = User::where('role', 'admin')
+            ->where('kampus_id', $this->getKampusId())
+            ->findOrFail($id);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -120,7 +128,9 @@ class AdminController extends Controller
      */
     public function destroy($id)
     {
-        $admin = User::where('role', 'admin')->findOrFail($id);
+        $admin = User::where('role', 'admin')
+            ->where('kampus_id', $this->getKampusId())
+            ->findOrFail($id);
         $admin->delete();
 
         return redirect()->route('admin.admins.index')->with('success', 'Admin berhasil dihapus');
@@ -131,7 +141,9 @@ class AdminController extends Controller
      */
     public function toggleStatus($id)
     {
-        $admin = User::where('role', 'admin')->findOrFail($id);
+        $admin = User::where('role', 'admin')
+            ->where('kampus_id', $this->getKampusId())
+            ->findOrFail($id);
 
         $newStatus = $admin->is_active ? false : true;
         $admin->update(['is_active' => $newStatus]);

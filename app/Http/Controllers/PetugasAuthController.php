@@ -10,9 +10,23 @@ class PetugasAuthController extends Controller
     /**
      * Show petugas login form
      */
-    public function showLoginForm()
+    public function showLoginForm(Request $request)
     {
-        return view('petugas.login');
+        $kampusId = $request->query('kampus_id');
+
+        if (! $kampusId) {
+            return redirect()->route('landing');
+        }
+
+        $kampus = \App\Models\Kampus::find($kampusId);
+        if (! $kampus) {
+            return redirect()->route('landing')->with('error', 'Kampus tidak valid');
+        }
+
+        return view('petugas.login', [
+            'kampus_id' => $kampusId,
+            'kampus' => $kampus,
+        ]);
     }
 
     /**
@@ -23,6 +37,7 @@ class PetugasAuthController extends Controller
         $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required',
+            'kampus_id' => 'required|numeric',
         ]);
 
         if (Auth::attempt($credentials)) {
@@ -34,6 +49,17 @@ class PetugasAuthController extends Controller
 
                 return back()->withErrors([
                     'email' => 'Anda tidak memiliki akses sebagai petugas daftar hadir.',
+                ])->withInput();
+            }
+
+            // Enforce kampus check
+            if ($user->kampus_id != $request->kampus_id) {
+                $kampusPilih = \App\Models\Kampus::find($request->kampus_id);
+                $kampusAsli = \App\Models\Kampus::find($user->kampus_id);
+                Auth::logout();
+
+                return back()->withErrors([
+                    'email' => "Akun Petugas ini terdaftar di {$kampusAsli->nama}. Anda tidak dapat login di portal {$kampusPilih->nama}.",
                 ])->withInput();
             }
 

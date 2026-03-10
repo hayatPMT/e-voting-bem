@@ -12,8 +12,9 @@ class TahapanController extends Controller
      */
     public function index()
     {
-        $tahapans = Tahapan::orderBy('waktu_mulai', 'desc')->get();
-        $currentTahapan = Tahapan::getCurrentTahapan();
+        $kampusId = $this->getKampusId();
+        $tahapans = Tahapan::where('kampus_id', $kampusId)->orderBy('waktu_mulai', 'desc')->get();
+        $currentTahapan = Tahapan::getCurrentTahapan($kampusId);
 
         return view('admin.tahapan.index', compact('tahapans', 'currentTahapan'));
     }
@@ -38,6 +39,7 @@ class TahapanController extends Controller
             'waktu_selesai' => 'required|date|after:waktu_mulai',
         ]);
 
+        $validated['kampus_id'] = $this->getKampusId();
         $tahapan = Tahapan::create($validated);
 
         return redirect()
@@ -50,7 +52,7 @@ class TahapanController extends Controller
      */
     public function edit(string $id)
     {
-        $tahapan = Tahapan::findOrFail($id);
+        $tahapan = Tahapan::where('kampus_id', $this->getKampusId())->findOrFail($id);
 
         return view('admin.tahapan.edit', compact('tahapan'));
     }
@@ -60,7 +62,7 @@ class TahapanController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $tahapan = Tahapan::findOrFail($id);
+        $tahapan = Tahapan::where('kampus_id', $this->getKampusId())->findOrFail($id);
 
         $validated = $request->validate([
             'nama_tahapan' => 'required|string|max:255',
@@ -81,7 +83,7 @@ class TahapanController extends Controller
      */
     public function destroy(string $id)
     {
-        $tahapan = Tahapan::findOrFail($id);
+        $tahapan = Tahapan::where('kampus_id', $this->getKampusId())->findOrFail($id);
 
         if ($tahapan->is_current) {
             return back()->with('error', 'Tidak dapat menghapus tahapan yang sedang aktif');
@@ -99,7 +101,7 @@ class TahapanController extends Controller
      */
     public function setAsCurrent(string $id)
     {
-        $tahapan = Tahapan::findOrFail($id);
+        $tahapan = Tahapan::where('kampus_id', $this->getKampusId())->findOrFail($id);
         $tahapan->setAsCurrent();
 
         return redirect()
@@ -112,7 +114,7 @@ class TahapanController extends Controller
      */
     public function updateStatus(Request $request, string $id)
     {
-        $tahapan = Tahapan::findOrFail($id);
+        $tahapan = Tahapan::where('kampus_id', $this->getKampusId())->findOrFail($id);
 
         $validated = $request->validate([
             'status' => 'required|in:draft,active,completed',

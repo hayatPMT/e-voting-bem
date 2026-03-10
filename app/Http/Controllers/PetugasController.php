@@ -15,6 +15,7 @@ class PetugasController extends Controller
     public function index()
     {
         $petugas = User::where('role', 'petugas_daftar_hadir')
+            ->where('kampus_id', $this->getKampusId())
             ->latest()
             ->paginate(15);
 
@@ -46,6 +47,7 @@ class PetugasController extends Controller
             'password' => Hash::make($request->password),
             'role' => 'petugas_daftar_hadir',
             'is_active' => true,
+            'kampus_id' => $this->getKampusId(),
         ]);
 
         return redirect()->route('admin.petugas.index')
@@ -57,7 +59,9 @@ class PetugasController extends Controller
      */
     public function edit($id)
     {
-        $petugas = User::where('role', 'petugas_daftar_hadir')->findOrFail($id);
+        $petugas = User::where('role', 'petugas_daftar_hadir')
+            ->where('kampus_id', $this->getKampusId())
+            ->findOrFail($id);
 
         return view('admin.petugas.edit', compact('petugas'));
     }
@@ -67,7 +71,9 @@ class PetugasController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $petugas = User::where('role', 'petugas_daftar_hadir')->findOrFail($id);
+        $petugas = User::where('role', 'petugas_daftar_hadir')
+            ->where('kampus_id', $this->getKampusId())
+            ->findOrFail($id);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -99,7 +105,9 @@ class PetugasController extends Controller
      */
     public function destroy($id)
     {
-        $petugas = User::where('role', 'petugas_daftar_hadir')->findOrFail($id);
+        $petugas = User::where('role', 'petugas_daftar_hadir')
+            ->where('kampus_id', $this->getKampusId())
+            ->findOrFail($id);
         $petugas->delete();
 
         return redirect()->route('admin.petugas.index')
@@ -111,7 +119,9 @@ class PetugasController extends Controller
      */
     public function toggleStatus($id)
     {
-        $petugas = User::where('role', 'petugas_daftar_hadir')->findOrFail($id);
+        $petugas = User::where('role', 'petugas_daftar_hadir')
+            ->where('kampus_id', $this->getKampusId())
+            ->findOrFail($id);
         $petugas->update(['is_active' => ! $petugas->is_active]);
 
         return back()->with('success', 'Status petugas berhasil diubah.');

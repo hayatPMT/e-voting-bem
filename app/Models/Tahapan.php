@@ -9,6 +9,7 @@ class Tahapan extends Model
     protected $table = 'tahapan';
 
     protected $fillable = [
+        'kampus_id',
         'nama_tahapan',
         'deskripsi',
         'waktu_mulai',
@@ -27,6 +28,14 @@ class Tahapan extends Model
     }
 
     /**
+     * Get the campus this tahapan belongs to
+     */
+    public function kampus(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Kampus::class);
+    }
+
+    /**
      * Check if tahapan is currently active
      */
     public function isActive(): bool
@@ -34,7 +43,7 @@ class Tahapan extends Model
         $now = now();
 
         return $this->status === 'active'
-         && $now->between($this->waktu_mulai, $this->waktu_selesai);
+            && $now->between($this->waktu_mulai, $this->waktu_selesai);
     }
 
     /**
@@ -56,11 +65,16 @@ class Tahapan extends Model
     /**
      * Get the current active tahapan
      */
-    public static function getCurrentTahapan(): ?self
+    public static function getCurrentTahapan($kampusId = null): ?self
     {
-        return self::where('is_current', true)
-            ->where('status', 'active')
-            ->first();
+        $query = self::where('is_current', true)
+            ->where('status', 'active');
+
+        if ($kampusId) {
+            $query->where('kampus_id', $kampusId);
+        }
+
+        return $query->first();
     }
 
     /**
@@ -68,7 +82,13 @@ class Tahapan extends Model
      */
     public function setAsCurrent(): void
     {
-        self::where('id', '!=', $this->id)->update(['is_current' => false]);
+        $query = self::where('id', '!=', $this->id);
+
+        if ($this->kampus_id) {
+            $query->where('kampus_id', $this->kampus_id);
+        }
+
+        $query->update(['is_current' => false]);
         $this->update(['is_current' => true, 'status' => 'active']);
     }
 }

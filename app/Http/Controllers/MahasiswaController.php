@@ -16,7 +16,10 @@ class MahasiswaController extends Controller
      */
     public function index()
     {
-        $mahasiswa = MahasiswaProfile::with('user')
+        $mahasiswa = MahasiswaProfile::whereHas('user', function ($q) {
+            $q->where('kampus_id', $this->getKampusId());
+        })
+            ->with('user')
             ->paginate(15);
 
         return view('admin.mahasiswa.index', compact('mahasiswa'));
@@ -52,6 +55,7 @@ class MahasiswaController extends Controller
             'password' => bcrypt($password),
             'role' => 'mahasiswa',
             'is_active' => true,
+            'kampus_id' => $this->getKampusId(),
         ]);
 
         MahasiswaProfile::create([
@@ -75,10 +79,15 @@ class MahasiswaController extends Controller
     }
 
     /**
-     * Import Mahasiswa from CSV
+     * Tampilkan Halaman Formulir Import Excel
      */
+    public function importForm()
+    {
+        return view('admin.mahasiswa.import');
+    }
+
     /**
-     * Import Mahasiswa from CSV
+     * Import Mahasiswa from Excel / CSV
      */
     public function import(Request $request)
     {
@@ -100,7 +109,9 @@ class MahasiswaController extends Controller
      */
     public function show($id)
     {
-        $mahasiswa = MahasiswaProfile::findOrFail($id);
+        $mahasiswa = MahasiswaProfile::whereHas('user', function ($q) {
+            $q->where('kampus_id', $this->getKampusId());
+        })->findOrFail($id);
         $mahasiswa->load('user');
 
         return view('admin.mahasiswa.show', compact('mahasiswa'));
@@ -111,7 +122,9 @@ class MahasiswaController extends Controller
      */
     public function edit($id)
     {
-        $mahasiswa = MahasiswaProfile::findOrFail($id);
+        $mahasiswa = MahasiswaProfile::whereHas('user', function ($q) {
+            $q->where('kampus_id', $this->getKampusId());
+        })->findOrFail($id);
         $mahasiswa->load('user');
 
         return view('admin.mahasiswa.edit', compact('mahasiswa'));
@@ -122,7 +135,9 @@ class MahasiswaController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $mahasiswa = MahasiswaProfile::findOrFail($id);
+        $mahasiswa = MahasiswaProfile::whereHas('user', function ($q) {
+            $q->where('kampus_id', $this->getKampusId());
+        })->findOrFail($id);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -157,53 +172,25 @@ class MahasiswaController extends Controller
      */
     public function destroy($id)
     {
-        $mahasiswa = MahasiswaProfile::findOrFail($id);
+        $mahasiswa = MahasiswaProfile::whereHas('user', function ($q) {
+            $q->where('kampus_id', $this->getKampusId());
+        })->findOrFail($id);
         $mahasiswa->user()->delete();
 
         return redirect()->route('admin.mahasiswa.index')->with('success', 'Data mahasiswa berhasil dihapus');
     }
 
     /**
-     * Export mahasiswa list to CSV
-     */
-    /**
-     * Export mahasiswa list to CSV
+     * Export mahasiswa list to Excel (.xlsx)
      */
     public function export()
     {
-        $headers = [
-            'Content-type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename=mahasiswa_'.date('Y-m-d_H-i-s').'.csv',
-            'Pragma' => 'no-cache',
-            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires' => '0',
-        ];
+        $kampusId = $this->getKampusId();
 
-        $columns = ['NIM', 'Nama', 'Email', 'Program Studi', 'Angkatan', 'Semester', 'Status', 'Sudah Voting'];
-
-        $callback = function () use ($columns) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $columns);
-
-            MahasiswaProfile::with('user')->chunk(100, function ($mahasiswas) use ($file) {
-                foreach ($mahasiswas as $m) {
-                    fputcsv($file, [
-                        $m->nim,
-                        $m->user->name ?? '',
-                        $m->user->email ?? '',
-                        $m->program_studi,
-                        $m->angkatan,
-                        $m->semester,
-                        $m->status,
-                        $m->has_voted ? 'Ya' : 'Tidak',
-                    ]);
-                }
-            });
-
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        return Excel::download(
+            new \App\Exports\MahasiswaExport($kampusId),
+            'Data_Mahasiswa_'.date('Y-m-d_H-i-s').'.xlsx'
+        );
     }
 
     /**
@@ -212,7 +199,9 @@ class MahasiswaController extends Controller
     public function toggleVotingStatus($id)
     {
         /** @var MahasiswaProfile $mahasiswa */
-        $mahasiswa = MahasiswaProfile::findOrFail($id);
+        $mahasiswa = MahasiswaProfile::whereHas('user', function ($q) {
+            $q->where('kampus_id', $this->getKampusId());
+        })->findOrFail($id);
 
         if ($mahasiswa->has_voted && $mahasiswa->vote_receipt) {
             try {

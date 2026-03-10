@@ -19,9 +19,34 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
+        // 1. Cek apakah ini Super Admin (Super Admin bisa login dari mana saja)
+        $user = \App\Models\User::where('email', $request->email)->first();
+        if ($user && $user->role === 'super_admin') {
+            if (Auth::attempt($credentials)) {
+                $request->session()->regenerate();
+
+                return redirect()->intended(route('superadmin.dashboard'));
+            }
+        }
+
+        // 2. Cek apakah ini Admin Kampus
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             $user = Auth::user();
+
+            // Validasi Kampus untuk Admin
+            $selectedKampusId = $request->input('kampus_id');
+
+            // Jika dia Admin tapi masuk lewat portal kampus lain
+            if ($user->role === 'admin' && $selectedKampusId && $user->kampus_id != $selectedKampusId) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                $kampusTerdaftar = \App\Models\Kampus::find($user->kampus_id);
+
+                return back()->with('error', 'Akun Admin Anda terdaftar di '.($kampusTerdaftar->nama ?? 'Kampus Lain').'. Silakan login melalui portal kampus yang benar.');
+            }
 
             if ($user->role === 'admin') {
                 return redirect()->intended('dashboard');

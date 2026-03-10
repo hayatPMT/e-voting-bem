@@ -26,8 +26,6 @@ class AdminProfile extends Model
         return $this->belongsTo(User::class);
     }
 
-
-
     /**
      * Check if admin is active
      */

@@ -21,7 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'superadmin' => \App\Http\Middleware\SuperAdminMiddleware::class,
             'petugas' => \App\Http\Middleware\PetugasMiddleware::class,
+            'campus.portal' => \App\Http\Middleware\ResolveCampusFromSlug::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

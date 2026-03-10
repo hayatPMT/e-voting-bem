@@ -12,7 +12,10 @@ class VotingBoothController extends Controller
      */
     public function index()
     {
-        $booths = VotingBooth::withCount('attendanceApprovals')->get();
+        $kampusId = $this->getKampusId();
+        $booths = VotingBooth::where('kampus_id', $kampusId)
+            ->withCount('attendanceApprovals')
+            ->get();
 
         return view('admin.voting-booths.index', compact('booths'));
     }
@@ -35,6 +38,7 @@ class VotingBoothController extends Controller
             'lokasi' => 'nullable|string|max:255',
         ]);
 
+        $validated['kampus_id'] = $this->getKampusId();
         VotingBooth::create($validated);
 
         return redirect()
@@ -47,7 +51,7 @@ class VotingBoothController extends Controller
      */
     public function edit(string $id)
     {
-        $booth = VotingBooth::findOrFail($id);
+        $booth = VotingBooth::where('kampus_id', $this->getKampusId())->findOrFail($id);
 
         return view('admin.voting-booths.edit', compact('booth'));
     }
@@ -57,7 +61,7 @@ class VotingBoothController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $booth = VotingBooth::findOrFail($id);
+        $booth = VotingBooth::where('kampus_id', $this->getKampusId())->findOrFail($id);
 
         $validated = $request->validate([
             'nama_booth' => 'required|string|max:255',
@@ -76,7 +80,7 @@ class VotingBoothController extends Controller
      */
     public function destroy(string $id)
     {
-        $booth = VotingBooth::findOrFail($id);
+        $booth = VotingBooth::where('kampus_id', $this->getKampusId())->findOrFail($id);
         $booth->delete();
 
         return redirect()
@@ -89,7 +93,7 @@ class VotingBoothController extends Controller
      */
     public function toggleStatus(string $id)
     {
-        $booth = VotingBooth::findOrFail($id);
+        $booth = VotingBooth::where('kampus_id', $this->getKampusId())->findOrFail($id);
         $booth->update(['is_active' => ! $booth->is_active]);
 
         return back()->with('success', 'Status kamar vote berhasil diubah');
@@ -149,10 +153,24 @@ class VotingBoothController extends Controller
     /**
      * Portal to select which booth to open
      */
-    public function portal()
+    public function portal(Request $request)
     {
-        $booths = VotingBooth::where('is_active', true)->get();
+        $kampusId = $request->get('kampus_id');
 
-        return view('voting-booth.portal', compact('booths'));
+        // Jika kampus_id belum dipilih, tampilkan halaman pilih kampus
+        if (! $kampusId) {
+            $kampuses = \App\Models\Kampus::where('is_active', true)->get();
+
+            return view('voting-booth.select_kampus', compact('kampuses'));
+        }
+
+        $kampus = \App\Models\Kampus::findOrFail($kampusId);
+
+        // Menampilkan bilik suara khusus kampus terpilih
+        $booths = VotingBooth::where('is_active', true)
+            ->where('kampus_id', $kampusId)
+            ->get();
+
+        return view('voting-booth.portal', compact('booths', 'kampus'));
     }
 }

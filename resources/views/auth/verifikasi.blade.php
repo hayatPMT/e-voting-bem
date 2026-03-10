@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verifikasi Mahasiswa | E-Voting BEM</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -138,7 +139,7 @@
 
         /* Header Section */
         .verify-header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            background: linear-gradient(135deg, {{ $kampus->primary_color ?? '#667eea' }} 0%, {{ $kampus->secondary_color ?? '#764ba2' }} 100%);
             padding: 2rem 2rem 1.5rem;
             text-align: center;
             color: white;
@@ -594,10 +595,11 @@
             <div class="col-12">
                 <div class="verify-card">
                     <div class="verify-header">
-                        <div class="verify-icon">
+                        <div class="verify-icon" style="background: linear-gradient(135deg, {{ $kampus->primary_color ?? '#667eea' }}, {{ $kampus->secondary_color ?? '#764ba2' }});">
                             <i class="fas fa-user-graduate"></i>
                         </div>
                         <h1>Verifikasi Mahasiswa</h1>
+                        <h5 class="mb-2" style="font-weight: 700; color: rgba(255,255,255,0.9);">{{ $kampus->nama ?? 'E-Voting BEM' }}</h5>
                         <p>Login dengan NIM untuk memilih</p>
                     </div>
 
@@ -606,74 +608,64 @@
                         <div class="alert alert-danger">
                             <i class="fas fa-exclamation-circle"></i>
                             <span>{{ session('error') }}</span>
-                        </div>
-                        @endif
+                        </div> @endif
 
                         <div class="info-box">
-                            <i class="fas fa-info-circle"></i>
-                            <div class="info-box-content">
-                                <div class="info-box-title">Informasi Login</div>
-                                <p class="info-box-text">Masukkan NIM dan password Anda untuk mengakses halaman voting. Pastikan data yang Anda masukkan benar.</p>
-                            </div>
-                        </div>
+    <i class="fas fa-info-circle"></i>
+    <div class="info-box-content">
+        <div class="info-box-title">Informasi Login</div>
+        <p class="info-box-text">Masukkan NIM dan password Anda untuk mengakses halaman voting. Pastikan data yang Anda
+            masukkan benar.</p>
+    </div>
+    </div>
 
-                        <form method="POST" action="{{ url('/verifikasi') }}">
-                            @csrf
-                            <input type="hidden" name="kandidat_id" value="{{ $kandidat_id ?? '' }}">
+    <form method="POST" action="{{ url('/verifikasi') }}">
+        @csrf
+        <input type="hidden" name="kandidat_id" value="{{ $kandidat_id ?? '' }}">
+        <input type="hidden" name="kampus_id" value="{{ $kampus_id ?? '' }}">
 
-                            <div class="form-group">
-                                <label for="nim">
-                                    <i class="fas fa-id-card"></i>
-                                    Nomor Induk Mahasiswa (NIM)
-                                </label>
-                                <input type="text"
-                                    id="nim"
-                                    name="nim"
-                                    class="form-control"
-                                    placeholder="Contoh: 19081234001"
-                                    value="{{ old('nim') }}"
-                                    required
-                                    autofocus
-                                    maxlength="20">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="password">
-                                    <i class="fas fa-lock"></i>
-                                    Password
-                                </label>
-                                <input type="password"
-                                    id="password"
-                                    name="password"
-                                    class="form-control"
-                                    placeholder="Masukkan password Anda"
-                                    required>
-                            </div>
-
-                            <button type="submit" class="btn-verify">
-                                <i class="fas fa-check-circle"></i>
-                                Verifikasi & Lanjutkan
-                            </button>
-                        </form>
-
-                        <div class="divider">
-                            <span>ATAU</span>
-                        </div>
-
-                        <a href="{{ url('/login') }}" class="btn-back">
-                            <i class="fas fa-user-shield"></i>
-                            Login sebagai Admin
-                        </a>
-                    </div>
-
-                    <div class="verify-footer">
-                        <p class="help-text">
-                            Belum punya akses? Hubungi <a href="#" class="help-link">panitia pemilihan</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
+        <div class="form-group">
+            <label for="nim">
+                <i class="fas fa-id-card"></i>
+                Nomor Induk Mahasiswa (NIM)
+            </label>
+            <input type="text" id="nim" name="nim" class="form-control" placeholder="Contoh: 19081234001"
+                value="{{ old('nim') }}" required autofocus maxlength="20">
         </div>
+
+        <div class="form-group">
+            <label for="password">
+                <i class="fas fa-lock"></i>
+                Password
+            </label>
+            <input type="password" id="password" name="password" class="form-control"
+                placeholder="Masukkan password Anda" required>
+        </div>
+
+        <button type="submit" class="btn-verify">
+            <i class="fas fa-check-circle"></i>
+            Verifikasi & Lanjutkan
+        </button>
+    </form>
+
+    <div class="divider">
+        <span>ATAU</span>
+    </div>
+
+    <a href="{{ url('/login') }}" class="btn-back">
+        <i class="fas fa-user-shield"></i>
+        Login sebagai Admin
+    </a>
+    </div>
+
+    <div class="verify-footer">
+        <p class="help-text">
+            Belum punya akses? Hubungi <a href="#" class="help-link">panitia pemilihan</a>
+        </p>
+    </div>
+    </div>
+    </div>
+    </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -694,6 +686,6 @@
             loader.style.opacity = '1';
         });
     </script>
-</body>
+    </body>
 
 </html>

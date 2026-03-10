@@ -13,7 +13,10 @@ class KandidatController extends Controller
      */
     public function index()
     {
-        $kandidat = Kandidat::withCount('votes')->orderBy('nama')->paginate(10);
+        $kandidat = Kandidat::where('kampus_id', $this->getKampusId())
+            ->withCount('votes')
+            ->orderBy('nama')
+            ->paginate(10);
 
         return view('admin.kandidat.index', compact('kandidat'));
     }
@@ -39,6 +42,8 @@ class KandidatController extends Controller
         ]);
 
         $data = $request->only('nama', 'visi', 'misi');
+        $data['kampus_id'] = $this->getKampusId();
+
         if ($request->hasFile('foto')) {
             $path = $request->file('foto')->store('kandidat', 'public');
             $data['foto'] = $path;
@@ -54,7 +59,7 @@ class KandidatController extends Controller
      */
     public function edit($id)
     {
-        $kandidat = Kandidat::findOrFail($id);
+        $kandidat = Kandidat::where('kampus_id', $this->getKampusId())->findOrFail($id);
 
         return view('admin.kandidat.edit', compact('kandidat'));
     }
@@ -64,7 +69,7 @@ class KandidatController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $kandidat = Kandidat::findOrFail($id);
+        $kandidat = Kandidat::where('kampus_id', $this->getKampusId())->findOrFail($id);
         $request->validate([
             'nama' => 'required|string|max:255',
             'visi' => 'required|string',
@@ -90,7 +95,7 @@ class KandidatController extends Controller
      */
     public function destroy($id)
     {
-        $kandidat = Kandidat::findOrFail($id);
+        $kandidat = Kandidat::where('kampus_id', $this->getKampusId())->findOrFail($id);
         if ($kandidat->foto) {
             Storage::disk('public')->delete($kandidat->foto);
         }

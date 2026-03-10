@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 class AttendanceApproval extends Model
 {
     protected $fillable = [
+        'kampus_id',
         'mahasiswa_id',
         'petugas_id',
         'voting_booth_id',
@@ -41,6 +42,14 @@ class AttendanceApproval extends Model
     public function petugas(): BelongsTo
     {
         return $this->belongsTo(User::class, 'petugas_id');
+    }
+
+    /**
+     * Get the campus this attendance belongs to
+     */
+    public function kampus(): BelongsTo
+    {
+        return $this->belongsTo(Kampus::class);
     }
 
     /**

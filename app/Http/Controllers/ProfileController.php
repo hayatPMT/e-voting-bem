@@ -32,12 +32,12 @@ class ProfileController extends Controller
         // Validation rules based on role
         $rules = [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'email' => 'required|email|max:255|unique:users,email,'.$user->id,
             'phone' => 'nullable|string|max:20',
         ];
 
         if ($user->isMahasiswa()) {
-            $rules['nim'] = 'required|string|max:20|unique:mahasiswa_profiles,nim,' . ($profile->id ?? '');
+            $rules['nim'] = 'required|string|max:20|unique:mahasiswa_profiles,nim,'.($profile->id ?? '');
             $rules['program_studi'] = 'nullable|string|max:100';
             $rules['angkatan'] = 'nullable|string|max:4';
             $rules['semester'] = 'nullable|integer|min:1|max:14';

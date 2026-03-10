@@ -11,7 +11,9 @@ return new class extends Migration
     public function up(): void
     {
         // Modify the role enum to include 'petugas_daftar_hadir'
-        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'mahasiswa', 'petugas_daftar_hadir') NOT NULL DEFAULT 'mahasiswa'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'mahasiswa', 'petugas_daftar_hadir') NOT NULL DEFAULT 'mahasiswa'");
+        }
     }
 
     /**
@@ -20,6 +22,8 @@ return new class extends Migration
     public function down(): void
     {
         // Revert back to original enum values
-        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'mahasiswa') NOT NULL DEFAULT 'mahasiswa'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'mahasiswa') NOT NULL DEFAULT 'mahasiswa'");
+        }
     }
 };

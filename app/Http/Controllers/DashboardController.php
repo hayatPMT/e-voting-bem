@@ -8,10 +8,17 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $kandidat = Kandidat::withCount('votes')->get();
-        $totalKandidat = Kandidat::count();
-        $totalSuara = Kandidat::sum('total_votes') + \App\Models\Vote::count();
-        $totalMahasiswa = \App\Models\User::where('role', 'mahasiswa')->count();
+        $kampusId = $this->getKampusId();
+
+        $kandidat = Kandidat::where('kampus_id', $kampusId)->withCount('votes')->get();
+        $totalKandidat = Kandidat::where('kampus_id', $kampusId)->count();
+
+        $totalSuara = Kandidat::where('kampus_id', $kampusId)->sum('total_votes')
+            + \App\Models\Vote::whereHas('kandidat', fn ($q) => $q->where('kampus_id', $kampusId))->count();
+
+        $totalMahasiswa = \App\Models\User::where('role', 'mahasiswa')
+            ->where('kampus_id', $kampusId)
+            ->count();
 
         return view('admin.dashboard', [
             'kandidat' => $kandidat,

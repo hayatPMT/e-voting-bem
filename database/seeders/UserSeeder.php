@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\AdminProfile;
+use App\Models\Kampus;
 use App\Models\MahasiswaProfile;
 use App\Models\Setting;
 use App\Models\User;
@@ -16,12 +17,33 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create default admin user
+        // 1. Create Default Kampus
+        $kampusUtama = Kampus::create([
+            'nama' => 'Universitas Indonesia',
+            'kode' => 'UI',
+            'kota' => 'Depok',
+            'primary_color' => '#f5a623',
+            'secondary_color' => '#1a1a2e',
+            'is_active' => true,
+        ]);
+
+        // 2. Create Super Admin
+        $superadmin = User::create([
+            'name' => 'SUPER ADMIN',
+            'email' => 'superadmin@bem.ac.id',
+            'password' => Hash::make('superadmin123'),
+            'role' => 'super_admin',
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
+
+        // 3. Create default admin user untuk Kampus Utama
         $admin = User::create([
-            'name' => 'Admin BEM',
-            'email' => 'admin@bem.ac.id',
+            'name' => 'Admin Kampus UI',
+            'email' => 'admin@ui.ac.id',
             'password' => Hash::make('admin12345'),
             'role' => 'admin',
+            'kampus_id' => $kampusUtama->id,
             'is_active' => true,
             'email_verified_at' => now(),
         ]);
@@ -79,6 +101,7 @@ class UserSeeder extends Seeder
                 'email' => $data['email'],
                 'password' => Hash::make($data['nim']), // Password = NIM
                 'role' => 'mahasiswa',
+                'kampus_id' => $kampusUtama->id,
                 'is_active' => true,
                 'email_verified_at' => now(),
             ]);
@@ -89,21 +112,23 @@ class UserSeeder extends Seeder
                 'program_studi' => $data['program_studi'],
                 'angkatan' => $data['angkatan'],
                 'semester' => 5,
-                'phone' => '08' . rand(100000000, 999999999),
+                'phone' => '08'.rand(100000000, 999999999),
                 'status' => 'active',
                 'has_voted' => false,
             ]);
         }
 
-        // Create initial settings (Open for 24 hours)
+        // Create initial settings (Open for 24 hours) for Kampus Utama
         Setting::create([
+            'kampus_id' => $kampusUtama->id,
             'voting_start' => now(),
             'voting_end' => now()->addHours(24),
         ]);
 
         $this->command->info('User accounts created successfully!');
-        $this->command->info('Admin account: admin@bem.ac.id / admin12345');
-        $this->command->info('Mahasiswa accounts created: ' . count($mahasiswaData));
-        $this->command->info('Settings initialized (Voting Open for 24h)');
+        $this->command->info('Super Admin account: superadmin@bem.ac.id / superadmin123');
+        $this->command->info('Admin account: admin@ui.ac.id / admin12345');
+        $this->command->info('Mahasiswa accounts created: '.count($mahasiswaData).' in Kampus UI');
+        $this->command->info('Settings initialized for Kampus UI (Voting Open for 24h)');
     }
 }

@@ -5,6 +5,7 @@ namespace App\Imports;
 use App\Models\MahasiswaProfile;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -17,6 +18,7 @@ class MahasiswaImport implements ToCollection, WithHeadingRow
         // But ToCollection is simpler if I want custom logic like transaction outside or inside.
         // Actually, let's use ToModel if simple, but we need two models: User and MahasiswaProfile.
         // So ToCollection is better to handle complex logic.
+        $kampusId = Auth::user()->kampus_id;
 
         foreach ($rows as $row) {
             // Skip if essential data is missing
@@ -34,10 +36,11 @@ class MahasiswaImport implements ToCollection, WithHeadingRow
 
             // Create User
             $user = User::create([
-                'name' => $row['nama_lengkap'] ?? $row['nama'] ?? 'Mahasiswa',
+                'name' => $row['nama_lengkap'] ?? ($row['nama'] ?? 'Mahasiswa'),
                 'email' => $email,
                 'password' => Hash::make($nim), // Default password is NIM
                 'role' => 'mahasiswa',
+                'kampus_id' => $kampusId,
                 'is_active' => true,
                 'email_verified_at' => now(),
             ]);
@@ -48,7 +51,7 @@ class MahasiswaImport implements ToCollection, WithHeadingRow
                 'nim' => $nim,
                 'program_studi' => $row['program_studi'] ?? 'Umum',
                 'angkatan' => $row['angkatan'] ?? date('Y'),
-                'semester' => 1,
+                'semester' => isset($row['semester']) ? (int) $row['semester'] : 1,
                 'status' => 'active',
             ]);
         }

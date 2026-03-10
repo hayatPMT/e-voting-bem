@@ -30,12 +30,12 @@
                         <div class="col-md-4 text-md-right">
                             <a href="{{ route('voting.receipt.download') }}" class="btn btn-success shadow-sm"
                                 style="background: #10b981;
-                                      border: none;
-                                      border-radius: 12px;
-                                      padding: 0.75rem 1.5rem;
-                                      font-weight: 700;
-                                      font-size: 0.95rem;
-                                      transition: all 0.3s ease;">
+                                    border: none;
+                                    border-radius: 12px;
+                                    padding: 0.75rem 1.5rem;
+                                    font-weight: 700;
+                                    font-size: 0.95rem;
+                                    transition: all 0.3s ease;">
                                 <i class="fas fa-file-pdf mr-2"></i>Download Bukti PDF
                             </a>
                         </div>
@@ -247,16 +247,16 @@
                                 <div class="position-absolute" style="top: 1rem; left: 1rem;">
                                     <div
                                         style="background: linear-gradient(135deg, #667eea, #764ba2);
-                                             color: white;
-                                             width: 45px;
-                                             height: 45px;
-                                             border-radius: 12px;
-                                             display: flex;
-                                             align-items: center;
-                                             justify-content: center;
-                                             font-weight: 800;
-                                             font-size: 1.25rem;
-                                             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);">
+                                            color: white;
+                                            width: 45px;
+                                            height: 45px;
+                                            border-radius: 12px;
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            font-weight: 800;
+                                            font-size: 1.25rem;
+                                            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);">
                                         {{ $loop->iteration }}
                                     </div>
                                 </div>
@@ -269,7 +269,7 @@
                                     {{ $k->nama }}
                                 </h5>
 
-                                <div class="candidate-vision flex-grow-1 mb-3"
+                                <div class="candidate-vision grow mb-3"
                                     style="background: #f9fafb;
                                         padding: 1rem;
                                         border-radius: 12px;
@@ -287,12 +287,12 @@
                                 <button type="button" class="btn btn-block btn-outline-primary mb-3" data-toggle="modal"
                                     data-target="#previewModal{{ $k->id }}"
                                     style="border: 2px solid #667eea;
-                                           color: #667eea;
-                                           border-radius: 12px;
-                                           padding: 0.75rem;
-                                           font-weight: 600;
-                                           font-size: 0.9rem;
-                                           transition: all 0.3s ease;">
+                                        color: #667eea;
+                                        border-radius: 12px;
+                                        padding: 0.75rem;
+                                        font-weight: 600;
+                                        font-size: 0.9rem;
+                                        transition: all 0.3s ease;">
                                     <i class="fas fa-eye mr-2"></i>Lihat Detail Visi & Misi
                                 </button>
 
@@ -302,12 +302,12 @@
                                         @if (auth()->user()->mahasiswaProfile->has_voted ?? false)
                                             <button class="btn btn-block disabled" disabled
                                                 style="background: #e5e7eb;
-                                                       color: #6b7280;
-                                                       border: none;
-                                                       border-radius: 12px;
-                                                       padding: 0.875rem;
-                                                       font-weight: 600;
-                                                       font-size: 0.95rem;">
+                                                    color: #6b7280;
+                                                    border: none;
+                                                    border-radius: 12px;
+                                                    padding: 0.875rem;
+                                                    font-weight: 600;
+                                                    font-size: 0.95rem;">
                                                 <i class="fas fa-check-circle mr-2"></i>Sudah Memilih
                                             </button>
                                         @elseif(auth()->user()->role === 'mahasiswa')
@@ -315,38 +315,38 @@
                                                 class="btn btn-block btn-vote btn-vote-action"
                                                 onclick="return confirm('Apakah Anda yakin memilih {{ $k->nama }}?\n\nPilihan Anda bersifat FINAL dan tidak dapat diubah setelah dikonfirmasi.')"
                                                 style="background: linear-gradient(135deg, #667eea, #764ba2);
-                                                  color: white;
-                                                  border: none;
-                                                  border-radius: 12px;
-                                                  padding: 0.875rem;
-                                                  font-weight: 700;
-                                                  font-size: 0.95rem;
-                                                  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-                                                  transition: all 0.3s ease;">
+                                                color: white;
+                                                border: none;
+                                                border-radius: 12px;
+                                                padding: 0.875rem;
+                                                font-weight: 700;
+                                                font-size: 0.95rem;
+                                                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+                                                transition: all 0.3s ease;">
                                                 <i class="fas fa-check-circle mr-2"></i>Pilih Kandidat
                                             </a>
                                         @else
                                             <button class="btn btn-block disabled" disabled
                                                 style="background: #fef3c7;
-                                                       color: #92400e;
-                                                       border: none;
-                                                       border-radius: 12px;
-                                                       padding: 0.875rem;
-                                                       font-weight: 600;
-                                                       font-size: 0.95rem;">
+                                                    color: #92400e;
+                                                    border: none;
+                                                    border-radius: 12px;
+                                                    padding: 0.875rem;
+                                                    font-weight: 600;
+                                                    font-size: 0.95rem;">
                                                 <i class="fas fa-user-graduate mr-2"></i>Hanya Mahasiswa
                                             </button>
                                         @endif
                                     @else
                                         <a href="{{ url('/verifikasi?kandidat=' . $k->id) }}" class="btn btn-block"
                                             style="background: white;
-                                              color: #667eea;
-                                              border: 2px solid #667eea;
-                                              border-radius: 12px;
-                                              padding: 0.875rem;
-                                              font-weight: 600;
-                                              font-size: 0.95rem;
-                                              transition: all 0.3s ease;">
+                                            color: #667eea;
+                                            border: 2px solid #667eea;
+                                            border-radius: 12px;
+                                            padding: 0.875rem;
+                                            font-weight: 600;
+                                            font-size: 0.95rem;
+                                            transition: all 0.3s ease;">
                                             <i class="fas fa-sign-in-alt mr-2"></i>Login untuk Memilih
                                         </a>
                                     @endauth
@@ -368,6 +368,35 @@
                     </div>
                 @endforelse
             </div>
+
+            <!-- Abstain Option -->
+            @if (count($kandidat) > 0 &&
+                    auth()->check() &&
+                    auth()->user()->role === 'mahasiswa' &&
+                    !(auth()->user()->mahasiswaProfile->has_voted ?? false))
+                <div class="row mt-5 justify-content-center">
+                    <div class="col-md-10 col-lg-8 text-center">
+                        <div class="p-4 p-md-5"
+                            style="background: white; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid #f3f4f6;">
+                            <div class="mx-auto mb-3"
+                                style="width: 64px; height: 64px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 1.8rem;">
+                                <i class="fas fa-user-slash"></i>
+                            </div>
+                            <h4 class="mb-2" style="color: #374151; font-weight: 800;">Tidak Menemukan Pilihan yang
+                                Sesuai?</h4>
+                            <p class="text-muted mb-4 mx-auto" style="max-width: 500px; line-height: 1.6;">
+                                Anda dapat memilih untuk <strong>abstain</strong>. Suara Anda akan tetap tercatat untuk
+                                kehadiran, namun tidak menambah poin pada kandidat mana pun. Pilihan ini bersifat final.
+                            </p>
+                            <a href="{{ route('voting.abstain') }}" class="btn btn-outline-secondary px-5 py-3"
+                                onclick="return confirm('Apakah Anda yakin memilih ABSTAIN?\n\nPilihan Anda bersifat FINAL dan tidak dapat diubah setelah dikonfirmasi.')"
+                                style="border-radius: 14px; font-weight: 700; font-size: 1.05rem; letter-spacing: 0.5px;">
+                                Pilih Abstain
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 
@@ -416,16 +445,16 @@
                                     <div class="position-absolute" style="top: 1rem; left: 1rem;">
                                         <div
                                             style="background: linear-gradient(135deg, #667eea, #764ba2);
-                                                     color: white;
-                                                     width: 50px;
-                                                     height: 50px;
-                                                     border-radius: 12px;
-                                                     display: flex;
-                                                     align-items: center;
-                                                     justify-content: center;
-                                                     font-weight: 800;
-                                                     font-size: 1.5rem;
-                                                     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);">
+                                                    color: white;
+                                                    width: 50px;
+                                                    height: 50px;
+                                                    border-radius: 12px;
+                                                    display: flex;
+                                                    align-items: center;
+                                                    justify-content: center;
+                                                    font-weight: 800;
+                                                    font-size: 1.5rem;
+                                                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);">
                                             {{ $loop->iteration }}
                                         </div>
                                     </div>
@@ -479,8 +508,8 @@
                                 <a href="/vote/{{ $k->id }}" class="btn px-4 rounded-pill shadow-sm"
                                     onclick="return confirm('Apakah Anda yakin memilih {{ $k->nama }}?\n\nPilihan Anda bersifat FINAL dan tidak dapat diubah setelah dikonfirmasi.')"
                                     style="background: linear-gradient(135deg, #667eea, #764ba2);
-                                          color: white;
-                                          font-weight: 700;">
+                                        color: white;
+                                        font-weight: 700;">
                                     <i class="fas fa-check-circle mr-2"></i>Pilih Kandidat Ini
                                 </a>
                             @endif

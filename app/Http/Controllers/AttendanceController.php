@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Models\VotingBooth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class AttendanceController extends Controller
 {
@@ -17,18 +16,24 @@ class AttendanceController extends Controller
      */
     public function index()
     {
-        $currentTahapan = Tahapan::getCurrentTahapan();
+        $petugasKampusId = Auth::user()->kampus_id;
+        $currentTahapan = Tahapan::getCurrentTahapan($petugasKampusId);
 
         if (! $currentTahapan) {
             return view('petugas.no-tahapan');
         }
 
         $attendances = AttendanceApproval::with(['mahasiswa.mahasiswaProfile', 'votingBooth'])
+            ->whereHas('mahasiswa', function ($q) use ($petugasKampusId) {
+                $q->where('kampus_id', $petugasKampusId);
+            })
             ->whereDate('created_at', today())
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $votingBooths = VotingBooth::where('is_active', true)->get();
+        $votingBooths = VotingBooth::where('is_active', true)
+            ->where('kampus_id', $petugasKampusId)
+            ->get();
 
         $activeBoothId = session()->get('active_booth_id');
 
@@ -36,7 +41,7 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Search mahasiswa by NIM
+     * Search mahasiswa by NIM — only within the same campus as petugas
      */
     public function searchMahasiswa(Request $request)
     {
@@ -44,7 +49,10 @@ class AttendanceController extends Controller
             'nim' => 'required|string',
         ]);
 
+        $petugasKampusId = Auth::user()->kampus_id;
+
         $mahasiswa = User::where('role', 'mahasiswa')
+            ->where('kampus_id', $petugasKampusId)
             ->whereHas('mahasiswaProfile', function ($query) use ($request) {
                 $query->where('nim', $request->nim);
             })
@@ -54,7 +62,7 @@ class AttendanceController extends Controller
         if (! $mahasiswa) {
             return response()->json([
                 'success' => false,
-                'message' => 'Mahasiswa tidak ditemukan',
+                'message' => 'Mahasiswa tidak ditemukan di kampus ini',
             ], 404);
         }
 
@@ -99,7 +107,13 @@ class AttendanceController extends Controller
             'mahasiswa_id' => 'required|exists:users,id',
         ]);
 
-        $mahasiswa = User::findOrFail($request->mahasiswa_id);
+        $petugasKampusId = Auth::user()->kampus_id;
+
+        // Ensure mahasiswa belongs to the same campus as the petugas
+        $mahasiswa = User::where('id', $request->mahasiswa_id)
+            ->where('kampus_id', $petugasKampusId)
+            ->where('role', 'mahasiswa')
+            ->firstOrFail();
 
         // Check if already approved today
         $existingApproval = AttendanceApproval::where('mahasiswa_id', $mahasiswa->id)
@@ -117,11 +131,12 @@ class AttendanceController extends Controller
 
         // Create attendance approval for OFFLINE mode only
         $attendance = AttendanceApproval::create([
+            'kampus_id' => $petugasKampusId,
             'mahasiswa_id' => $request->mahasiswa_id,
             'petugas_id' => Auth::id(),
             'status' => 'approved',
             'approved_at' => now(),
-            'mode' => 'offline', // Explicitly set mode to offline
+            'mode' => 'offline',
         ]);
 
         // Generate session token only for offline attendance
@@ -154,8 +169,11 @@ class AttendanceController extends Controller
             return redirect()->route('voting-booth.standby', $attendance->voting_booth_id)->with('error', 'Mahasiswa sudah melakukan voting');
         }
 
-        $kandidat = \App\Models\Kandidat::orderBy('id')->get();
-        $setting = \App\Models\Setting::first();
+        // Get campus from the mahasiswa's kampus_id for proper scoping
+        $kampusId = $attendance->mahasiswa->kampus_id;
+
+        $kandidat = \App\Models\Kandidat::where('kampus_id', $kampusId)->orderBy('id')->get();
+        $setting = \App\Models\Setting::where('kampus_id', $kampusId)->first();
 
         $serverNow = now()->timestamp * 1000;
         $startTime = ($setting && $setting->voting_start) ? $setting->voting_start->timestamp * 1000 : now()->subMinute()->timestamp * 1000;
@@ -170,7 +188,7 @@ class AttendanceController extends Controller
     public function processVote(Request $request, string $token)
     {
         $request->validate([
-            'kandidat_id' => 'required|exists:kandidats,id',
+            'kandidat_id' => 'required',
         ]);
 
         $attendance = AttendanceApproval::where('session_token', $token)->firstOrFail();
@@ -185,6 +203,15 @@ class AttendanceController extends Controller
             return redirect()->route('voting-booth.standby', $attendance->voting_booth_id)->with('error', 'Mahasiswa sudah melakukan voting');
         }
 
+        $kampusId = $attendance->mahasiswa->kampus_id;
+
+        if ($request->kandidat_id !== 'abstain') {
+            // Ensure kandidat belongs to the same campus as the mahasiswa
+            $kandidat = \App\Models\Kandidat::where('kampus_id', $kampusId)
+                ->where('id', $request->kandidat_id)
+                ->firstOrFail();
+        }
+
         // Create vote using VotingController logic
         $votingController = new VotingController;
 
@@ -192,7 +219,11 @@ class AttendanceController extends Controller
         Auth::login($attendance->mahasiswa);
 
         // Process the vote
-        $response = $votingController->vote($request->kandidat_id);
+        if ($request->kandidat_id === 'abstain') {
+            $response = $votingController->abstain();
+        } else {
+            $response = $votingController->vote($request->kandidat_id);
+        }
 
         // Mark attendance as voted
         $attendance->markAsVoted();
@@ -220,9 +251,13 @@ class AttendanceController extends Controller
             'voting_booth_id' => 'required|exists:voting_booths,id',
         ]);
 
-        Log::info('Petugas set booth: ' . $request->voting_booth_id . ' by user ' . Auth::id());
+        // Ensure the booth belongs to the petugas's campus
+        $petugasKampusId = Auth::user()->kampus_id;
+        VotingBooth::where('id', $request->voting_booth_id)
+            ->where('kampus_id', $petugasKampusId)
+            ->firstOrFail();
+
         session(['active_booth_id' => $request->voting_booth_id]);
-        session()->save();
 
         return redirect()->route('petugas.attendance.index')->with('success', 'Bilik suara aktif berhasil diatur');
     }
@@ -232,7 +267,11 @@ class AttendanceController extends Controller
      */
     public function cancel(string $id)
     {
-        $attendance = AttendanceApproval::findOrFail($id);
+        $petugasKampusId = Auth::user()->kampus_id;
+
+        $attendance = AttendanceApproval::whereHas('mahasiswa', function ($q) use ($petugasKampusId) {
+            $q->where('kampus_id', $petugasKampusId);
+        })->findOrFail($id);
 
         if ($attendance->hasVoted()) {
             return back()->with('error', 'Tidak dapat membatalkan approval yang sudah voting');
