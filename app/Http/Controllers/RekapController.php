@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AttendanceApproval;
 use App\Models\Kandidat;
+use App\Models\AttendanceApproval;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class RekapController extends Controller
@@ -13,50 +14,60 @@ class RekapController extends Controller
     {
         $kampusId = $this->getKampusId();
 
+        // Scope kandidat to campus
         $data = Kandidat::where('kampus_id', $kampusId)->withCount('votes')->get();
 
-        // Participation stats
+        // Calculate statistics
         $totalMahasiswa = \App\Models\User::where('role', 'mahasiswa')
             ->where('kampus_id', $kampusId)
             ->count();
 
-        $sudahVoting = \App\Models\Vote::where('kampus_id', $kampusId)->count();
+        $sudahVoting = \App\Models\MahasiswaProfile::where('has_voted', true)
+            ->whereHas('user', function ($q) use ($kampusId) {
+                $q->where('kampus_id', $kampusId);
+            })->count();
+
+        $belumVoting = max(0, $totalMahasiswa - $sudahVoting);
+        $partisipasiPersen = $totalMahasiswa > 0 ? round(($sudahVoting / $totalMahasiswa) * 100, 1) : 0;
+        
         $abstainVotes = \App\Models\Vote::where('kampus_id', $kampusId)->where('is_abstain', true)->count();
 
-        // From attendance approvals – breakdown by mode
-        $attendanceAll = \App\Models\AttendanceApproval::whereHas('mahasiswa', fn ($q) => $q->where('kampus_id', $kampusId))
+        // Count voters by mode based on completed attendances
+        $onlineVoters = AttendanceApproval::where('kampus_id', $kampusId)
+            ->where('mode', 'online')
             ->where('status', 'voted')
-            ->get();
+            ->count();
 
-        $onlineVoters = $attendanceAll->where('mode', 'online')->count();
-        $offlineVoters = $attendanceAll->where('mode', 'offline')->count();
+        $offlineVoters = AttendanceApproval::where('kampus_id', $kampusId)
+            ->where('mode', 'offline')
+            ->where('status', 'voted')
+            ->count();
 
-        // Hourly trend for today (last 8 hours)
-        $hourlyTrend = \App\Models\Vote::where('kampus_id', $kampusId)
+        // Calculate trend data for today (voted per hour from 08:00 to 18:00)
+        $votesToday = \App\Models\Vote::where('kampus_id', $kampusId)
             ->whereDate('created_at', today())
-            ->selectRaw('HOUR(created_at) as hour, COUNT(*) as total')
-            ->groupBy('hour')
-            ->orderBy('hour')
-            ->pluck('total', 'hour')
-            ->toArray();
+            ->get()
+            ->groupBy(function($vote) {
+                return \Carbon\Carbon::parse($vote->created_at)->format('H');
+            });
 
-        // Build last 12 hours array
-        $currentHour = now()->hour;
         $trendLabels = [];
         $trendData = [];
-        for ($h = max(0, $currentHour - 11); $h <= $currentHour; $h++) {
-            $trendLabels[] = str_pad($h, 2, '0', STR_PAD_LEFT).':00';
-            $trendData[] = $hourlyTrend[$h] ?? 0;
+
+        for ($i = 8; $i <= 18; $i++) {
+            $formattedHour = sprintf("%02d", $i);
+            $trendLabels[] = $formattedHour . ":00";
+            $trendData[] = isset($votesToday[$formattedHour]) ? $votesToday[$formattedHour]->count() : 0;
         }
 
         $stats = [
             'total_mahasiswa' => $totalMahasiswa,
             'sudah_voting' => $sudahVoting,
-            'belum_voting' => max(0, $totalMahasiswa - $sudahVoting),
-            'partisipasi_persen' => $totalMahasiswa > 0 ? round(($sudahVoting / $totalMahasiswa) * 100, 1) : 0,
+            'belum_voting' => $belumVoting,
+            'partisipasi_persen' => $partisipasiPersen,
+            'abstain_votes' => $abstainVotes,
             'online_voters' => $onlineVoters,
             'offline_voters' => $offlineVoters,
-            'abstain_votes' => $abstainVotes,
             'trend_labels' => $trendLabels,
             'trend_data' => $trendData,
         ];
@@ -64,57 +75,52 @@ class RekapController extends Controller
         return view('admin.rekap', compact('data', 'stats'));
     }
 
-    /**
-     * Show attendance report (daftar hadir)
-     */
     public function attendanceReport(Request $request)
     {
         $kampusId = $this->getKampusId();
-        $query = AttendanceApproval::whereHas('mahasiswa', function ($q) use ($kampusId) {
-            $q->where('kampus_id', $kampusId);
-        })->with(['mahasiswa.mahasiswaProfile', 'petugas']);
+        
+        $query = AttendanceApproval::with(['mahasiswa.mahasiswaProfile', 'petugas'])
+                                    ->where('kampus_id', $kampusId);
 
-        // Filter by date
         if ($request->filled('date')) {
             $query->whereDate('created_at', $request->date);
         } else {
-            // Default: today
             $query->whereDate('created_at', today());
         }
 
-        // Filter by mode
         if ($request->filled('mode')) {
             $query->where('mode', $request->mode);
         }
 
-        // Filter by status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
         $attendances = $query->orderBy('created_at', 'desc')->get();
 
-        // Summary stats
+        $baseQuery = AttendanceApproval::where('kampus_id', $kampusId);
+        if ($request->filled('date')) {
+            $baseQuery->whereDate('created_at', $request->date);
+        } else {
+            $baseQuery->whereDate('created_at', today());
+        }
+
         $stats = [
-            'total' => $attendances->count(),
-            'online' => $attendances->where('mode', 'online')->count(),
-            'offline' => $attendances->where('mode', 'offline')->count(),
-            'approved' => $attendances->where('status', 'approved')->count(),
-            'voted' => $attendances->where('status', 'voted')->count(),
+            'total' => (clone $baseQuery)->count(),
+            'online' => (clone $baseQuery)->where('mode', 'online')->count(),
+            'offline' => (clone $baseQuery)->where('mode', 'offline')->count(),
+            'voted' => (clone $baseQuery)->where('status', 'voted')->count(),
         ];
 
         return view('admin.attendance-report', compact('attendances', 'stats'));
     }
 
-    /**
-     * Export attendance to CSV
-     */
     public function exportAttendance(Request $request)
     {
         $kampusId = $this->getKampusId();
-        $query = AttendanceApproval::whereHas('mahasiswa', function ($q) use ($kampusId) {
-            $q->where('kampus_id', $kampusId);
-        })->with(['mahasiswa.mahasiswaProfile', 'petugas']);
+        
+        $query = AttendanceApproval::with(['mahasiswa.mahasiswaProfile', 'petugas'])
+                                    ->where('kampus_id', $kampusId);
 
         if ($request->filled('date')) {
             $query->whereDate('created_at', $request->date);
@@ -130,52 +136,41 @@ class RekapController extends Controller
             $query->where('status', $request->status);
         }
 
-        $attendances = $query->orderBy('created_at', 'asc')->get();
+        $attendances = $query->orderBy('created_at', 'desc')->get();
 
-        // Create CSV response
-        $filename = 'Daftar_Hadir_'.now()->format('Y-m-d_His').'.csv';
+        $filename = "laporan_kehadiran_" . date('Y-m-d_H-i-s') . ".csv";
 
-        $response = new StreamedResponse(function () use ($attendances) {
-            $handle = fopen('php://output', 'w');
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
 
-            // Set UTF-8 BOM for Excel
-            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+        $columns = ['No', 'Waktu', 'NIM', 'Nama Mahasiswa', 'Program Studi', 'Mode', 'Status', 'Petugas'];
 
-            // Header
-            fputcsv($handle, [
-                'No.',
-                'Waktu',
-                'NIM',
-                'Nama',
-                'Program Studi',
-                'Mode',
-                'Status',
-                'Petugas',
-                'Token',
-            ], ';');
-
-            // Data
-            foreach ($attendances as $index => $att) {
-                fputcsv($handle, [
-                    $index + 1,
-                    $att->created_at->format('Y-m-d H:i:s'),
-                    $att->mahasiswa->mahasiswaProfile->nim ?? '-',
-                    $att->mahasiswa->name ?? '-',
-                    $att->mahasiswa->mahasiswaProfile->program_studi ?? '-',
-                    ucfirst($att->mode ?? 'online'),
-                    ucfirst($att->status ?? '-'),
-                    $att->petugas?->name ?? 'Self-Register',
-                    $att->session_token ?? '-',
-                ], ';');
+        $callback = function () use ($attendances, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+            
+            $no = 1;
+            foreach ($attendances as $attendance) {
+                $row = [
+                    $no++,
+                    $attendance->created_at->format('Y-m-d H:i:s'),
+                    $attendance->mahasiswa->mahasiswaProfile->nim ?? '-',
+                    $attendance->mahasiswa->name ?? '-',
+                    $attendance->mahasiswa->mahasiswaProfile->program_studi ?? '-',
+                    ucfirst($attendance->mode),
+                    ucfirst($attendance->status),
+                    $attendance->petugas->name ?? 'Self-Register'
+                ];
+                fputcsv($file, $row);
             }
+            fclose($file);
+        };
 
-            fclose($handle);
-        }, 200, [
-            'Content-Encoding' => 'UTF-8',
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
-        ]);
-
-        return $response;
+        return new StreamedResponse($callback, 200, $headers);
     }
 }

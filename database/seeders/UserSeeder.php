@@ -21,6 +21,7 @@ class UserSeeder extends Seeder
         $kampusUtama = Kampus::create([
             'nama' => 'Universitas Indonesia',
             'kode' => 'UI',
+            'slug' => 'ui',
             'kota' => 'Depok',
             'primary_color' => '#f5a623',
             'secondary_color' => '#1a1a2e',

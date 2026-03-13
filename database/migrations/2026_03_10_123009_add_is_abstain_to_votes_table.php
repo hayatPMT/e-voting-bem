@@ -7,16 +7,33 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Add is_abstain column (raw SQL for compatibility)
-        DB::statement('ALTER TABLE votes ADD COLUMN IF NOT EXISTS `is_abstain` TINYINT(1) NOT NULL DEFAULT 0 AFTER `vote_hash`');
+        // using Schema builder ensures compatibility across database drivers
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('votes', 'is_abstain')) {
+            \Illuminate\Support\Facades\Schema::table('votes', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->boolean('is_abstain')->default(false)->after('vote_hash');
+            });
+        }
 
-        // Make kandidat_id nullable for abstain votes
-        DB::statement('ALTER TABLE votes MODIFY `kandidat_id` BIGINT UNSIGNED NULL');
+        // make kandidat_id nullable; schema builder handles the driver-specific SQL
+        if (\Illuminate\Support\Facades\Schema::hasColumn('votes', 'kandidat_id')) {
+            \Illuminate\Support\Facades\Schema::table('votes', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->unsignedBigInteger('kandidat_id')->nullable()->change();
+            });
+        }
     }
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE votes MODIFY `kandidat_id` BIGINT UNSIGNED NOT NULL');
-        DB::statement('ALTER TABLE votes DROP COLUMN IF EXISTS `is_abstain`');
+        if (\Illuminate\Support\Facades\Schema::hasColumn('votes', 'kandidat_id')) {
+            \Illuminate\Support\Facades\Schema::table('votes', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->unsignedBigInteger('kandidat_id')->nullable(false)->change();
+            });
+        }
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('votes', 'is_abstain')) {
+            \Illuminate\Support\Facades\Schema::table('votes', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->dropColumn('is_abstain');
+            });
+        }
     }
 };
